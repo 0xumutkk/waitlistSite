@@ -85,9 +85,13 @@ export function Hero({
           </div>
         </div>
 
-        <div className="absolute left-1/2 top-[226px] z-10 flex -translate-x-1/2 flex-col items-center justify-center">
+        <div
+          className={`absolute left-1/2 z-10 flex -translate-x-1/2 flex-col items-center justify-center ${
+            isJoined ? "top-[206px]" : "top-[226px]"
+          }`}
+        >
           {isJoined ? (
-            <div className="origin-top scale-[0.75] sm:scale-90">
+            <div className="origin-top scale-[0.72] min-[430px]:scale-[0.78] sm:scale-90">
               <SuccessCard 
                 username={username}
                 rank={rank}

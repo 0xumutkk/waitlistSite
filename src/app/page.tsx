@@ -126,7 +126,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[8px] pt-[8px] pb-[8px] md:max-w-[1264px] md:gap-[17px] md:mt-auto md:mb-[45px] md:pt-[80px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[8px] py-[8px] md:max-w-[1264px] md:gap-[17px] md:py-[45px]">
         <div
           className="flex h-[68px] w-full flex-col justify-center overflow-hidden rounded-[12px] border border-black/10 bg-white/60 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
           data-node-id="260:4410"
