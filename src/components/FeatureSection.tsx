@@ -48,17 +48,17 @@ export function FeatureSection() {
   return (
     <div className="h-full flex flex-col bg-white/30 rounded-[12px] backdrop-blur-[24px] overflow-hidden">
       {/* Header bar with "Features" label */}
-      <div className="h-[40px] flex items-center px-[15px] shrink-0">
+      <div className="h-[40px] flex items-center px-[16px] shrink-0">
         <h2 className="text-[14px] font-semibold text-black">Features</h2>
       </div>
 
       {/* Content area */}
-      <div className="flex-1 min-h-0 px-[8px]">
+      <div className="flex-1 min-h-0 px-[16px]">
         <FeatureScroller scrollerRef={scrollerRef} />
       </div>
 
       {/* Pagination bar: < ● ● ● ● ● > */}
-      <div className="flex items-center justify-center gap-[8px] shrink-0 pt-[8px] pb-[16px]">
+      <div className="flex items-center justify-center gap-[8px] shrink-0 pt-[16px] pb-[16px]">
         {/* Left arrow */}
         <button
           type="button"

@@ -58,25 +58,27 @@ export function Hero({
         data-node-id="265:8196"
         data-name="Heading 1"
       >
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/hero-hands-transparent.png"
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
+        {!isJoined && (
+          <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/hero-hands-transparent.png"
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          </div>
+        )}
 
-        <div className="absolute left-1/2 top-[110px] z-10 flex h-[100px] w-[291px] -translate-x-1/2 flex-col items-center">
+        <div className={`absolute left-1/2 z-10 flex -translate-x-1/2 flex-col items-center ${isJoined ? "top-[154px]" : "top-[110px] h-[100px] w-[291px]"}`}>
           <h1 className="w-full text-center font-display text-[44px] font-light leading-[0.73] tracking-[-0.64px] text-black">
             Trade What Happens. Together.
           </h1>
 
-          <div className="mt-[24px] flex h-[15.547px] items-center gap-[4.5px]" data-node-id="265:8185">
-            <p className="h-[15.547px] w-[46.687px] font-display text-[18px] font-light leading-[15.5px] tracking-[-0.36px] text-black">
+          <div className="mt-[24px] flex h-[15.547px] items-center gap-[4.5px]">
+            <p className="h-[15.547px] font-display text-[18px] font-light leading-[15.5px] tracking-[-0.36px] text-black">
               Built on
             </p>
-            <div className="relative h-[15.547px] w-[100.7px] shrink-0" data-name="HL logo_dark green 2">
+            <div className="relative h-[15.547px] w-[100.7px] shrink-0">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src="/hyperliquid-logo-figma.svg"
@@ -85,15 +87,9 @@ export function Hero({
               />
             </div>
           </div>
-        </div>
 
-        <div
-          className={`absolute left-1/2 z-10 flex -translate-x-1/2 flex-col items-center justify-center ${
-            isJoined ? "top-[206px]" : "top-[226px]"
-          }`}
-        >
           {isJoined ? (
-            <div className="origin-top scale-[0.72] min-[430px]:scale-[0.78] sm:scale-90">
+            <div className="mt-[24px] origin-top scale-[0.68] min-[390px]:scale-[0.72] min-[430px]:scale-[0.78] sm:scale-90">
               <SuccessCard 
                 username={username}
                 avatarUrl={avatarUrl}
@@ -103,7 +99,7 @@ export function Hero({
               />
             </div>
           ) : (
-            <div className="h-[52px] rounded-[18px] border border-[rgba(0,0,0,0.15)] bg-white p-2">
+            <div className="mt-[16px] h-[52px] rounded-[18px] border border-[rgba(0,0,0,0.15)] bg-white p-2">
               <button
                 onClick={onJoin}
                 className="flex h-[36px] cursor-pointer items-center gap-[8px] rounded-[10px] border-none bg-[#36bf5a] py-[8px] pl-[12px] pr-[16px] no-underline transition-all hover:bg-[#2fa64e] active:scale-95"
@@ -124,38 +120,33 @@ export function Hero({
 
   return (
     <section
-      className="relative flex h-[391.405px] w-full flex-col items-center justify-center gap-[16px] overflow-hidden rounded-[12px] bg-white/30 py-[24px] backdrop-blur-[24px]"
+      className="relative flex h-[391.405px] w-full flex-col items-center justify-center gap-[16px] overflow-hidden rounded-[12px] bg-white/30 p-4 backdrop-blur-[24px]"
       data-node-id="260:4577"
       data-name="Heading 1"
     >
-      <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src="/hero-hands-transparent.png"
-          alt=""
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-      </div>
+      {!isJoined && (
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-hands-transparent.png"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+      )}
 
-      <div className="relative z-10 flex flex-col items-center gap-[24px]">
+      <div className="relative z-10 flex flex-col items-center gap-[16px]">
         <div className="relative h-[60.835px] w-[656.945px]">
           <div className="absolute inset-[-1.68%_-0.16%]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src="/trade-title.svg" alt="Trade What Happens. Together." className="block w-full h-full" />
           </div>
         </div>
-        <div className="flex h-[23px] items-center gap-[6px]" data-node-id="260:4619">
-          <p
-            className="h-[23px] w-[62.25px] font-display text-[24px] font-light leading-[23px] tracking-[-0.48px] text-black"
-            data-node-id="260:4620"
-          >
+        <div className="flex h-[23px] items-center gap-[6px]">
+          <p className="h-[23px] font-display text-[24px] font-light leading-[23px] tracking-[-0.48px] text-black">
             Built on
           </p>
-          <div
-            className="relative h-[20.729px] w-[134.267px] shrink-0"
-            data-node-id="260:4621"
-            data-name="HL logo_dark green 2"
-          >
+          <div className="relative h-[20.729px] w-[134.267px] shrink-0">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/hyperliquid-logo-figma.svg"
@@ -164,34 +155,34 @@ export function Hero({
             />
           </div>
         </div>
-      </div>
 
-      <div className="relative z-10 flex justify-center w-full">
-        {isJoined ? (
-          <div className="scale-[0.85] sm:scale-100 origin-top">
-            <SuccessCard 
-              username={username}
-              avatarUrl={avatarUrl}
-              rank={rank}
-              referralLink={referralLink}
-              onCopyReferral={onCopyReferral}
-            />
-          </div>
-        ) : (
-          <div className="bg-white p-2 rounded-[18px] border border-[rgba(0,0,0,0.15)]">
-            <button
-              onClick={onJoin}
-              className="bg-[#36bf5a] hover:bg-[#2fa64e] active:scale-95 transition-all pl-[12px] pr-[16px] py-[8px] rounded-[10px] flex items-center gap-[8px] no-underline border-none cursor-pointer"
-            >
-              <div className="relative size-[19.47px] shrink-0">
-                <CtaIcon isJoined={isJoined} />
-              </div>
-              <span className="text-white font-medium text-[15px] leading-[20px] whitespace-nowrap">
-                {ctaText}
-              </span>
-            </button>
-          </div>
-        )}
+        <div className="mt-[8px] flex justify-center">
+          {isJoined ? (
+            <div className="origin-top scale-[0.85] xl:scale-100">
+              <SuccessCard 
+                username={username}
+                avatarUrl={avatarUrl}
+                rank={rank}
+                referralLink={referralLink}
+                onCopyReferral={onCopyReferral}
+              />
+            </div>
+          ) : (
+            <div className="rounded-[18px] border border-[rgba(0,0,0,0.15)] bg-white p-2">
+              <button
+                onClick={onJoin}
+                className="flex items-center gap-[8px] rounded-[10px] border-none bg-[#36bf5a] py-[8px] pl-[12px] pr-[16px] no-underline transition-all hover:bg-[#2fa64e] active:scale-95 cursor-pointer"
+              >
+                <div className="relative size-[19.47px] shrink-0">
+                  <CtaIcon isJoined={isJoined} />
+                </div>
+                <span className="whitespace-nowrap text-[15px] font-medium leading-[20px] text-white">
+                  {ctaText}
+                </span>
+              </button>
+            </div>
+          )}
+        </div>
       </div>
     </section>
   );

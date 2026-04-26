@@ -256,55 +256,54 @@ export function SuccessCard({
       data-node-id="264:5456"
       onClick={(event) => event.stopPropagation()}
     >
-      {/* Visual card (display only) */}
       <div className="relative h-[178.038px] w-[340.2px] shrink-0 overflow-hidden rounded-[9px] bg-[#f5f5f5]">
-        <div className="absolute left-0 top-0 flex items-end gap-[1.288px] p-[12px]">
+        <div className="absolute left-0 top-0 flex items-center gap-[4px] p-[12px]">
           <div className="relative h-[16.909px] w-[88.571px] shrink-0">
             <Image
               src="/perminal-wordmark.svg"
               alt="Perminal"
               fill
-              className="object-fill"
+              className="object-contain"
             />
           </div>
           <div className="relative h-[3.294px] w-[13.645px] shrink-0">
             <div
               className="absolute inset-0"
-              data-node-id="264:5482"
               style={{ backgroundImage: UNDERLINE_BACKGROUND_IMAGE }}
             />
             <div
               className="absolute inset-0 blur-[0.588px]"
-              data-node-id="264:5483"
               style={{ backgroundImage: UNDERLINE_BACKGROUND_IMAGE }}
             />
           </div>
         </div>
 
-        <div className="absolute left-1/2 top-[74.17px] flex h-[66.79px] w-[153.617px] -translate-x-1/2 -translate-y-1/2 flex-col justify-center text-center font-display text-[32.881px] font-light leading-[0] tracking-[-0.4932px] text-black">
-          <p className="leading-[83.59%]">Joined Waitlist</p>
+        <div className="absolute inset-x-0 top-[40.7px] flex flex-col items-center justify-center text-center">
+          <p className="font-display text-[32.881px] font-light leading-[1.02] tracking-[-0.49px] text-black">
+            Joined<br />Waitlist
+          </p>
         </div>
 
-        <div className="absolute left-0 top-[111.7px] p-[6.804px]">
-          <div className="flex w-[326.592px] gap-[7.849px]">
-            <div className="flex h-[52.591px] min-w-0 flex-1 items-center overflow-hidden rounded-[15.699px] bg-white py-[12.559px] pl-[3.925px] pr-[15.699px]">
-              <div className="flex items-center gap-[7.849px]">
-                <div className="relative size-[44.741px] shrink-0 overflow-hidden rounded-[11.774px] bg-[#e6e6e6]">
+        <div className="absolute inset-x-0 bottom-0 p-[6.8px]">
+          <div className="flex w-full gap-[7.8px]">
+            <div className="flex h-[52.6px] min-w-0 flex-1 items-center rounded-[15.7px] bg-white px-[4px]">
+              <div className="flex items-center gap-[7.8px]">
+                <div className="relative size-[44.7px] shrink-0 overflow-hidden rounded-[11.8px] bg-[#e6e6e6]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={avatarUrl || "/waitlist-avatar.png"}
                     alt=""
-                    className="absolute inset-0 h-full w-full object-cover object-[50%_54%]"
+                    className="absolute inset-0 h-full w-full object-cover"
                   />
                 </div>
-                <p className="whitespace-nowrap text-center text-[16.484px] font-semibold leading-normal tracking-[-0.5233px] text-black/80">
+                <p className="truncate text-[16.5px] font-semibold tracking-[-0.52px] text-black/80">
                   {username}
                 </p>
               </div>
             </div>
 
-            <div className="flex h-[52.731px] w-[74.844px] shrink-0 items-center justify-center overflow-hidden rounded-[15.699px] bg-white px-[6.804px] py-[12.559px]">
-              <p className="whitespace-nowrap text-center text-[13.608px] font-medium leading-normal tracking-[-0.5233px] text-black/40">
+            <div className="flex h-[52.7px] w-[74.8px] shrink-0 items-center justify-center rounded-[15.7px] bg-white">
+              <p className="text-[13.6px] font-medium tracking-[-0.52px] text-black/40">
                 {rank}
               </p>
             </div>
@@ -318,32 +317,30 @@ export function SuccessCard({
           type="button"
           onClick={handleShareOnX}
           disabled={!hasReferralLink}
-          aria-label="Share referral link on X"
-          className="flex min-h-0 flex-1 items-start overflow-hidden rounded-[7.5px] bg-[#36bf5a] py-[6px] pl-[6px] pr-[12px] text-white transition-colors hover:bg-[#2fa64e] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex flex-1 items-center justify-center rounded-[7.5px] bg-[#36bf5a] text-white transition-colors hover:bg-[#2fa64e] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <span className="flex items-center gap-[3px]">
-            <span className="relative size-[14.603px] shrink-0">
+          <div className="flex flex-col items-center gap-[4px] px-2 text-center">
+            <div className="relative size-[14.6px] shrink-0">
               <Image
-                src="/x-share-icon.svg"
+                src="/x-logo-white.svg"
                 alt=""
                 fill
                 className="object-contain"
               />
-            </span>
-            <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+            </div>
+            <span className="text-[11.25px] font-medium leading-[1.2] text-white">
               Share on X
             </span>
-          </span>
+          </div>
         </button>
 
         <button
           type="button"
           onClick={handleCopyReferral}
           disabled={!hasReferralLink}
-          aria-live="polite"
-          className="flex min-h-0 flex-1 items-start overflow-hidden rounded-[7.5px] bg-[#f5f5f5] py-[6px] pl-[9px] pr-[12px] text-left text-black transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50"
+          className="flex flex-1 items-center justify-center rounded-[7.5px] bg-[#f5f5f5] text-black transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50"
         >
-          <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+          <span className="text-center text-[11.25px] font-medium leading-[1.2]">
             {copyLabel}
           </span>
         </button>
@@ -351,9 +348,9 @@ export function SuccessCard({
         <button
           type="button"
           onClick={handleDownload}
-          className="flex min-h-0 flex-1 items-start overflow-hidden rounded-[7.5px] bg-[#f5f5f5] py-[6px] pl-[9px] pr-[12px] text-left text-black transition-colors hover:bg-[#ebebeb]"
+          className="flex flex-1 items-center justify-center rounded-[7.5px] bg-[#f5f5f5] text-black transition-colors hover:bg-[#ebebeb]"
         >
-          <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+          <span className="text-center text-[11.25px] font-medium leading-[1.2]">
             Download
           </span>
         </button>

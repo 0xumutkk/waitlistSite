@@ -115,7 +115,7 @@ export default function Home() {
 
   return (
     <main className="relative min-h-screen w-full flex flex-col overflow-x-hidden bg-[#8FAAD9] px-2 md:px-4">
-      <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none">
+      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
         <Image
           src="/thumbnail_bg.png"
           alt=""
@@ -126,7 +126,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[8px] py-[8px] md:max-w-[1264px] md:gap-[17px] md:py-[45px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[16px] py-[16px] md:max-w-[1264px] md:gap-[17px] md:py-[45px]">
         <div
           className="flex h-[68px] w-full flex-col justify-center overflow-hidden rounded-[12px] border border-black/10 bg-white/60 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
           data-node-id="260:4410"
@@ -135,7 +135,7 @@ export default function Home() {
           <Header />
         </div>
 
-        <div className="flex flex-col gap-[8px] md:hidden">
+        <div className="flex flex-col gap-[16px] md:hidden">
           <Hero 
             isJoined={authenticated} 
             onJoin={handleJoin} 
@@ -164,7 +164,7 @@ export default function Home() {
           data-node-id="260:4428"
           data-name="Wallet"
         >
-          <div className="flex h-[817px] w-full gap-[8px] overflow-hidden">
+          <div className="flex h-[817px] w-full gap-[16px] overflow-hidden">
             <Leaderboard
               entries={entries}
               isLoading={isLeaderboardLoading}
@@ -172,7 +172,7 @@ export default function Home() {
               onCopyReferral={copyReferral}
             />
 
-            <div className="flex h-full flex-1 flex-col gap-[8px] overflow-hidden">
+            <div className="flex h-full flex-1 flex-col gap-[16px] overflow-hidden">
               <Hero 
                 isJoined={authenticated} 
                 onJoin={handleJoin}
