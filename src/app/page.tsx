@@ -6,12 +6,12 @@ import { Header } from "@/components/Header";
 import { Hero } from "@/components/Hero";
 import { FeatureSection } from "@/components/FeatureSection";
 import { Leaderboard } from "@/components/Leaderboard";
-import { SuccessModal } from "@/components/SuccessModal";
 import type { LeaderboardEntry, MeResponse } from "@/lib/referrals/types";
 import { usePerminalAuth } from "./providers";
 
+const PENDING_WAITLIST_JOIN_KEY = "perminal:pending-waitlist-join";
+
 export default function Home() {
-  const [isSuccessOpen, setIsSuccessOpen] = useState(false);
   const [didRequestJoin, setDidRequestJoin] = useState(false);
   const [me, setMe] = useState<MeResponse | null>(null);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
@@ -70,11 +70,19 @@ export default function Home() {
     if (!ready || !authenticated) return;
 
     queueMicrotask(() => {
+      const hasPendingJoin =
+        didRequestJoin ||
+        (typeof window !== "undefined" &&
+          window.sessionStorage.getItem(PENDING_WAITLIST_JOIN_KEY) === "1");
+
       void syncUser()
         .then(() => {
-          if (didRequestJoin) setIsSuccessOpen(true);
+          if (!hasPendingJoin) return;
+          window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
+          setDidRequestJoin(false);
         })
         .catch(() => {
+          window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
           setDidRequestJoin(false);
         });
     });
@@ -87,9 +95,13 @@ export default function Home() {
 
   const handleJoin = useCallback(() => {
     setDidRequestJoin(true);
+    window.sessionStorage.setItem(PENDING_WAITLIST_JOIN_KEY, "1");
 
     if (authenticated) {
-      void syncUser().then(() => setIsSuccessOpen(true));
+      void syncUser().then(() => {
+        window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
+        setDidRequestJoin(false);
+      });
       return;
     }
 
@@ -102,7 +114,7 @@ export default function Home() {
   }, [me]);
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-[#8FAAD9] px-4">
+    <main className="relative min-h-screen w-full flex flex-col overflow-x-hidden bg-[#8FAAD9] px-2 md:px-4">
       <div aria-hidden="true" className="absolute inset-0 z-0 pointer-events-none">
         <Image
           src="/thumbnail_bg.png"
@@ -114,7 +126,7 @@ export default function Home() {
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[1264px] flex-col gap-[17px] pt-[45px]">
+      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[8px] pt-[8px] pb-[8px] md:max-w-[1264px] md:gap-[17px] md:mt-auto md:mb-[45px] md:pt-[80px]">
         <div
           className="flex h-[68px] w-full flex-col justify-center overflow-hidden rounded-[12px] border border-black/10 bg-white/60 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
           data-node-id="260:4410"
@@ -123,8 +135,31 @@ export default function Home() {
           <Header />
         </div>
 
+        <div className="flex flex-col gap-[8px] md:hidden">
+          <Hero 
+            isJoined={authenticated} 
+            onJoin={handleJoin} 
+            variant="mobile"
+            username={modalUsername}
+            rank={me ? `#${me.rank.toLocaleString()}` : undefined}
+            referralLink={referralLink}
+            onCopyReferral={copyReferral}
+          />
+
+          <div className="h-[417.595px] w-full">
+            <FeatureSection />
+          </div>
+
+          <Leaderboard
+            entries={entries}
+            isLoading={isLeaderboardLoading}
+            referralLink={referralLink}
+            onCopyReferral={copyReferral}
+          />
+        </div>
+
         <div
-          className="flex h-[849px] w-full flex-col overflow-hidden rounded-[12px] border border-black/10 bg-white/25 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
+          className="hidden h-[849px] w-full flex-col overflow-hidden rounded-[12px] border border-black/10 bg-white/25 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px] md:flex"
           data-node-id="260:4428"
           data-name="Wallet"
         >
@@ -137,7 +172,14 @@ export default function Home() {
             />
 
             <div className="flex h-full flex-1 flex-col gap-[8px] overflow-hidden">
-              <Hero onJoin={handleJoin} />
+              <Hero 
+                isJoined={authenticated} 
+                onJoin={handleJoin}
+                username={modalUsername}
+                rank={me ? `#${me.rank.toLocaleString()}` : undefined}
+                referralLink={referralLink}
+                onCopyReferral={copyReferral}
+              />
 
               <div className="min-h-0 flex-1">
                 <FeatureSection />
@@ -146,15 +188,6 @@ export default function Home() {
           </div>
         </div>
       </div>
-
-      <SuccessModal
-        isOpen={isSuccessOpen}
-        onClose={() => setIsSuccessOpen(false)}
-        username={modalUsername}
-        rank={me ? `#${me.rank.toLocaleString()}` : undefined}
-        referralLink={referralLink}
-        onCopyReferral={copyReferral}
-      />
     </main>
   );
 }
