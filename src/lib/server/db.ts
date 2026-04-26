@@ -147,17 +147,18 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   async upsertUser(profile: PrivyProfile): Promise<{ user: LocalUser; isNew: boolean }> {
-    const existing = await this.getUserByPrivyId(profile.privyUserId);
+    const existing = await this.findExistingUser(profile);
     const now = new Date().toISOString();
 
     if (existing) {
       const { data, error } = await this.client
         .from("waitlist_users")
         .update({
-          email: profile.email,
-          twitter_username: profile.twitterUsername,
-          display_name: profile.displayName,
-          avatar_url: profile.avatarUrl,
+          privy_user_id: profile.privyUserId,
+          email: profile.email ?? existing.email,
+          twitter_username: profile.twitterUsername ?? existing.twitterUsername,
+          display_name: profile.displayName ?? existing.displayName,
+          avatar_url: profile.avatarUrl ?? existing.avatarUrl,
           last_login_at: now,
         })
         .eq("id", existing.id)
@@ -188,6 +189,33 @@ class SupabaseAdapter implements DbAdapter {
     const user = toLocalUser(data as UserRow);
     await this.ensureStats(user.id);
     return { user, isNew: true };
+  }
+
+  private async findExistingUser(profile: PrivyProfile): Promise<LocalUser | null> {
+    const byPrivyId = await this.getUserByPrivyId(profile.privyUserId);
+    if (byPrivyId) return byPrivyId;
+
+    if (profile.email) {
+      const { data, error } = await this.client
+        .from("waitlist_users")
+        .select("*")
+        .ilike("email", profile.email)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return toLocalUser(data as UserRow);
+    }
+
+    if (profile.twitterUsername) {
+      const { data, error } = await this.client
+        .from("waitlist_users")
+        .select("*")
+        .ilike("twitter_username", profile.twitterUsername)
+        .maybeSingle();
+      if (error) throw error;
+      if (data) return toLocalUser(data as UserRow);
+    }
+
+    return null;
   }
 
   async recordReferralVisit(input: ReferralVisitInput): Promise<void> {
@@ -340,17 +368,25 @@ class SqliteAdapter implements DbAdapter {
   }
 
   async upsertUser(profile: PrivyProfile): Promise<{ user: LocalUser; isNew: boolean }> {
-    const existing = await this.getUserByPrivyId(profile.privyUserId);
+    const existing = await this.findExistingUser(profile);
     const now = new Date().toISOString();
 
     if (existing) {
       this.db
         .prepare(
           `update waitlist_users
-           set email = ?, twitter_username = ?, display_name = ?, avatar_url = ?, last_login_at = ?
+           set privy_user_id = ?, email = ?, twitter_username = ?, display_name = ?, avatar_url = ?, last_login_at = ?
            where id = ?`,
         )
-        .run(profile.email, profile.twitterUsername, profile.displayName, profile.avatarUrl, now, existing.id);
+        .run(
+          profile.privyUserId,
+          profile.email ?? existing.email,
+          profile.twitterUsername ?? existing.twitterUsername,
+          profile.displayName ?? existing.displayName,
+          profile.avatarUrl ?? existing.avatarUrl,
+          now,
+          existing.id,
+        );
 
       return { user: (await this.getUserByPrivyId(profile.privyUserId)) ?? existing, isNew: false };
     }
@@ -379,6 +415,27 @@ class SqliteAdapter implements DbAdapter {
     if (!user) throw new Error("Failed to read newly created user");
 
     return { user, isNew: true };
+  }
+
+  private async findExistingUser(profile: PrivyProfile): Promise<LocalUser | null> {
+    const byPrivyId = await this.getUserByPrivyId(profile.privyUserId);
+    if (byPrivyId) return byPrivyId;
+
+    if (profile.email) {
+      const row = this.db
+        .prepare("select * from waitlist_users where lower(email) = lower(?)")
+        .get(profile.email) as UserRow | undefined;
+      if (row) return toLocalUser(row);
+    }
+
+    if (profile.twitterUsername) {
+      const row = this.db
+        .prepare("select * from waitlist_users where lower(twitter_username) = lower(?)")
+        .get(profile.twitterUsername) as UserRow | undefined;
+      if (row) return toLocalUser(row);
+    }
+
+    return null;
   }
 
   async recordReferralVisit(input: ReferralVisitInput): Promise<void> {
@@ -519,6 +576,8 @@ class SqliteAdapter implements DbAdapter {
 
       create index if not exists waitlist_referrals_referrer_status_idx on waitlist_referrals(referrer_user_id, status);
       create index if not exists waitlist_referral_visits_code_created_idx on waitlist_referral_visits(referral_code, created_at);
+      create unique index if not exists waitlist_users_email_unique_idx on waitlist_users(lower(email)) where email is not null;
+      create unique index if not exists waitlist_users_twitter_unique_idx on waitlist_users(lower(twitter_username)) where twitter_username is not null;
 
       create view if not exists waitlist_leaderboard_entries as
         select
