@@ -44,7 +44,8 @@ create index if not exists waitlist_referrals_referrer_status_idx
 create index if not exists waitlist_referral_visits_code_created_idx
   on public.waitlist_referral_visits(referral_code, created_at);
 
-create or replace view public.waitlist_leaderboard_entries as
+create or replace view public.waitlist_leaderboard_entries
+with (security_invoker = on) as
   select
     row_number() over (
       order by coalesce(ls.verified_invites_count, 0) desc, u.created_at asc
