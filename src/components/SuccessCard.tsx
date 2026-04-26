@@ -5,6 +5,7 @@ import { useCallback, useRef, useState } from "react";
 
 export interface SuccessCardProps {
   username?: string;
+  avatarUrl?: string | null;
   rank?: string;
   referralLink?: string;
   onCopyReferral?: () => void;
@@ -85,6 +86,7 @@ function roundRect(
 async function renderCardToBlob(
   username: string,
   rank: string,
+  avatarUrl?: string | null,
 ): Promise<Blob | null> {
   const S = 2; // retina scale
   const W = 340;
@@ -137,7 +139,7 @@ async function renderCardToBlob(
 
   // Avatar
   try {
-    const avatar = await loadImg("/waitlist-avatar.png");
+    const avatar = await loadImg(avatarUrl || "/waitlist-avatar.png");
     ctx.save();
     roundRect(ctx, 10.7, pillY + 3.9, 44.7, 44.7, 11.8);
     ctx.clip();
@@ -177,8 +179,9 @@ async function renderCardToBlob(
 /* ── Component ──────────────────────────────────────────────────── */
 
 export function SuccessCard({
-  username = "@adilcreates",
-  rank = "#12,234",
+  username = "Loading...",
+  avatarUrl,
+  rank = "---",
   referralLink,
 }: SuccessCardProps) {
   const busyRef = useRef(false);
@@ -187,8 +190,8 @@ export function SuccessCard({
   const hasReferralLink = Boolean(referralLink);
 
   const getBlob = useCallback(
-    () => renderCardToBlob(username, rank),
-    [username, rank],
+    () => renderCardToBlob(username, rank, avatarUrl),
+    [username, rank, avatarUrl],
   );
 
   const handleShareOnX = useCallback(
@@ -287,11 +290,11 @@ export function SuccessCard({
             <div className="flex h-[52.591px] min-w-0 flex-1 items-center overflow-hidden rounded-[15.699px] bg-white py-[12.559px] pl-[3.925px] pr-[15.699px]">
               <div className="flex items-center gap-[7.849px]">
                 <div className="relative size-[44.741px] shrink-0 overflow-hidden rounded-[11.774px] bg-[#e6e6e6]">
-                  <Image
-                    src="/waitlist-avatar.png"
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={avatarUrl || "/waitlist-avatar.png"}
                     alt=""
-                    fill
-                    className="object-cover object-[50%_54%]"
+                    className="absolute inset-0 h-full w-full object-cover object-[50%_54%]"
                   />
                 </div>
                 <p className="whitespace-nowrap text-center text-[16.484px] font-semibold leading-normal tracking-[-0.5233px] text-black/80">

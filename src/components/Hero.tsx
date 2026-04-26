@@ -7,6 +7,7 @@ interface HeroProps {
   onJoin?: () => void;
   variant?: "desktop" | "mobile";
   username?: string;
+  avatarUrl?: string | null;
   rank?: string;
   referralLink?: string;
   onCopyReferral?: () => void;
@@ -43,6 +44,7 @@ export function Hero({
   onJoin, 
   variant = "desktop",
   username,
+  avatarUrl,
   rank,
   referralLink,
   onCopyReferral
@@ -94,6 +96,7 @@ export function Hero({
             <div className="origin-top scale-[0.72] min-[430px]:scale-[0.78] sm:scale-90">
               <SuccessCard 
                 username={username}
+                avatarUrl={avatarUrl}
                 rank={rank}
                 referralLink={referralLink}
                 onCopyReferral={onCopyReferral}
@@ -168,6 +171,7 @@ export function Hero({
           <div className="scale-[0.85] sm:scale-100 origin-top">
             <SuccessCard 
               username={username}
+              avatarUrl={avatarUrl}
               rank={rank}
               referralLink={referralLink}
               onCopyReferral={onCopyReferral}

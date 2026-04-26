@@ -141,6 +141,7 @@ export default function Home() {
             onJoin={handleJoin} 
             variant="mobile"
             username={modalUsername}
+            avatarUrl={me?.user.avatarUrl}
             rank={me ? `#${me.rank.toLocaleString()}` : undefined}
             referralLink={referralLink}
             onCopyReferral={copyReferral}
@@ -176,6 +177,7 @@ export default function Home() {
                 isJoined={authenticated} 
                 onJoin={handleJoin}
                 username={modalUsername}
+                avatarUrl={me?.user.avatarUrl}
                 rank={me ? `#${me.rank.toLocaleString()}` : undefined}
                 referralLink={referralLink}
                 onCopyReferral={copyReferral}
