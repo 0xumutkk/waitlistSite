@@ -70,6 +70,15 @@ Use `DATABASE_URL=sqlite:.data/perminal.sqlite` for local SQLite development. In
 omit SQLite as the writer and use Supabase; `SQLITE_BACKUP_PATH` is only read when the public
 leaderboard needs a snapshot fallback.
 
+Waitlist data intentionally uses prefixed tables so it can live in the same Supabase project as
+the mobile app without colliding with app-owned tables:
+
+- `waitlist_users`
+- `waitlist_referrals`
+- `waitlist_referral_visits`
+- `waitlist_leaderboard_stats`
+- `waitlist_leaderboard_entries`
+
 ## Visual QA helpers
 
 `scripts/snap.mjs` and `scripts/snap-right.mjs` use Playwright to capture screenshots

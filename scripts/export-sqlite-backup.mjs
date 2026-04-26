@@ -18,7 +18,7 @@ const supabase = createClient(supabaseUrl, serviceRoleKey, {
 });
 
 const { data, error } = await supabase
-  .from("leaderboard_entries")
+  .from("waitlist_leaderboard_entries")
   .select("rank,user_id,username,avatar_url,referral_code,invites")
   .order("rank", { ascending: true });
 
@@ -26,8 +26,8 @@ if (error) throw error;
 
 const db = new Database(outputPath);
 db.exec(`
-  drop table if exists leaderboard_entries_snapshot;
-  create table leaderboard_entries_snapshot (
+  drop table if exists waitlist_leaderboard_entries_snapshot;
+  create table waitlist_leaderboard_entries_snapshot (
     rank integer not null,
     user_id text not null,
     username text not null,
@@ -38,7 +38,7 @@ db.exec(`
 `);
 
 const insert = db.prepare(
-  `insert into leaderboard_entries_snapshot
+  `insert into waitlist_leaderboard_entries_snapshot
    (rank, user_id, username, avatar_url, referral_code, invites)
    values (@rank, @user_id, @username, @avatar_url, @referral_code, @invites)`,
 );

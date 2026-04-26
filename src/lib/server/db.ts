@@ -126,13 +126,13 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   async getUserByPrivyId(privyUserId: string): Promise<LocalUser | null> {
-    const { data, error } = await this.client.from("users").select("*").eq("privy_user_id", privyUserId).maybeSingle();
+    const { data, error } = await this.client.from("waitlist_users").select("*").eq("privy_user_id", privyUserId).maybeSingle();
     if (error) throw error;
     return data ? toLocalUser(data as UserRow) : null;
   }
 
   async getUserByReferralCode(referralCode: string): Promise<LocalUser | null> {
-    const { data, error } = await this.client.from("users").select("*").eq("referral_code", referralCode).maybeSingle();
+    const { data, error } = await this.client.from("waitlist_users").select("*").eq("referral_code", referralCode).maybeSingle();
     if (error) throw error;
     return data ? toLocalUser(data as UserRow) : null;
   }
@@ -143,7 +143,7 @@ class SupabaseAdapter implements DbAdapter {
 
     if (existing) {
       const { data, error } = await this.client
-        .from("users")
+        .from("waitlist_users")
         .update({
           email: profile.email,
           twitter_username: profile.twitterUsername,
@@ -161,7 +161,7 @@ class SupabaseAdapter implements DbAdapter {
 
     const referralCode = await createUniqueReferralCode((code) => this.getUserByReferralCode(code));
     const { data, error } = await this.client
-      .from("users")
+      .from("waitlist_users")
       .insert({
         privy_user_id: profile.privyUserId,
         email: profile.email,
@@ -182,7 +182,7 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   async recordReferralVisit(input: ReferralVisitInput): Promise<void> {
-    const { error } = await this.client.from("referral_visits").insert({
+    const { error } = await this.client.from("waitlist_referral_visits").insert({
       referral_code: input.referralCode,
       visitor_fingerprint_hash: input.visitorFingerprintHash,
       ip_hash: input.ipHash,
@@ -197,7 +197,7 @@ class SupabaseAdapter implements DbAdapter {
     referredUserId: string;
     referralCode: string;
   }): Promise<boolean> {
-    const { error } = await this.client.from("referrals").insert({
+    const { error } = await this.client.from("waitlist_referrals").insert({
       referrer_user_id: input.referrerUserId,
       referred_user_id: input.referredUserId,
       referral_code: input.referralCode,
@@ -215,11 +215,11 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   async getMe(userId: string, origin: string): Promise<MeResponse> {
-    const { data: userData, error: userError } = await this.client.from("users").select("*").eq("id", userId).single();
+    const { data: userData, error: userError } = await this.client.from("waitlist_users").select("*").eq("id", userId).single();
     if (userError) throw userError;
 
     const { data: rankData, error: rankError } = await this.client
-      .from("leaderboard_entries")
+      .from("waitlist_leaderboard_entries")
       .select("*")
       .eq("user_id", userId)
       .single();
@@ -238,7 +238,7 @@ class SupabaseAdapter implements DbAdapter {
 
   async getLeaderboard(input: { limit: number; currentUserId?: string | null }): Promise<LeaderboardEntry[]> {
     const { data, error } = await this.client
-      .from("leaderboard_entries")
+      .from("waitlist_leaderboard_entries")
       .select("*")
       .order("rank", { ascending: true })
       .limit(input.limit);
@@ -254,7 +254,7 @@ class SupabaseAdapter implements DbAdapter {
 
     if (input.currentUserId && !hasCurrentUser) {
       const { data: currentUserData, error: currentUserError } = await this.client
-        .from("leaderboard_entries")
+        .from("waitlist_leaderboard_entries")
         .select("*")
         .eq("user_id", input.currentUserId)
         .maybeSingle();
@@ -268,14 +268,14 @@ class SupabaseAdapter implements DbAdapter {
 
   private async ensureStats(userId: string): Promise<void> {
     const { error } = await this.client
-      .from("leaderboard_stats")
+      .from("waitlist_leaderboard_stats")
       .upsert({ user_id: userId, verified_invites_count: 0 }, { onConflict: "user_id", ignoreDuplicates: true });
     if (error) throw error;
   }
 
   private async refreshStats(userId: string): Promise<void> {
     const { count, error: countError } = await this.client
-      .from("referrals")
+      .from("waitlist_referrals")
       .select("id", { count: "exact", head: true })
       .eq("referrer_user_id", userId)
       .eq("status", "verified");
@@ -283,7 +283,7 @@ class SupabaseAdapter implements DbAdapter {
     if (countError) throw countError;
 
     const { error } = await this.client
-      .from("leaderboard_stats")
+      .from("waitlist_leaderboard_stats")
       .upsert({ user_id: userId, verified_invites_count: count ?? 0, updated_at: new Date().toISOString() });
     if (error) throw error;
   }
@@ -299,7 +299,7 @@ function readSqliteLeaderboardBackup(limit: number, currentUserId?: string | nul
       fileMustExist: true,
     });
     const rows = db
-      .prepare("select * from leaderboard_entries_snapshot order by rank asc limit ?")
+      .prepare("select * from waitlist_leaderboard_entries_snapshot order by rank asc limit ?")
       .all(limit) as LeaderboardRow[];
     db.close();
 
@@ -321,12 +321,12 @@ class SqliteAdapter implements DbAdapter {
   }
 
   async getUserByPrivyId(privyUserId: string): Promise<LocalUser | null> {
-    const row = this.db.prepare("select * from users where privy_user_id = ?").get(privyUserId) as UserRow | undefined;
+    const row = this.db.prepare("select * from waitlist_users where privy_user_id = ?").get(privyUserId) as UserRow | undefined;
     return row ? toLocalUser(row) : null;
   }
 
   async getUserByReferralCode(referralCode: string): Promise<LocalUser | null> {
-    const row = this.db.prepare("select * from users where referral_code = ?").get(referralCode) as UserRow | undefined;
+    const row = this.db.prepare("select * from waitlist_users where referral_code = ?").get(referralCode) as UserRow | undefined;
     return row ? toLocalUser(row) : null;
   }
 
@@ -337,7 +337,7 @@ class SqliteAdapter implements DbAdapter {
     if (existing) {
       this.db
         .prepare(
-          `update users
+          `update waitlist_users
            set email = ?, twitter_username = ?, display_name = ?, avatar_url = ?, last_login_at = ?
            where id = ?`,
         )
@@ -351,7 +351,7 @@ class SqliteAdapter implements DbAdapter {
 
     this.db
       .prepare(
-        `insert into users (id, privy_user_id, email, twitter_username, display_name, avatar_url, referral_code, last_login_at)
+        `insert into waitlist_users (id, privy_user_id, email, twitter_username, display_name, avatar_url, referral_code, last_login_at)
          values (?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
@@ -375,7 +375,7 @@ class SqliteAdapter implements DbAdapter {
   async recordReferralVisit(input: ReferralVisitInput): Promise<void> {
     this.db
       .prepare(
-        `insert into referral_visits (id, referral_code, visitor_fingerprint_hash, ip_hash, user_agent_hash)
+        `insert into waitlist_referral_visits (id, referral_code, visitor_fingerprint_hash, ip_hash, user_agent_hash)
          values (?, ?, ?, ?, ?)`,
       )
       .run(
@@ -395,7 +395,7 @@ class SqliteAdapter implements DbAdapter {
     try {
       this.db
         .prepare(
-          `insert into referrals (id, referrer_user_id, referred_user_id, referral_code, status)
+          `insert into waitlist_referrals (id, referrer_user_id, referred_user_id, referral_code, status)
            values (?, ?, ?, ?, 'verified')`,
         )
         .run(randomUUID(), input.referrerUserId, input.referredUserId, input.referralCode);
@@ -410,8 +410,8 @@ class SqliteAdapter implements DbAdapter {
   }
 
   async getMe(userId: string, origin: string): Promise<MeResponse> {
-    const userRow = this.db.prepare("select * from users where id = ?").get(userId) as UserRow | undefined;
-    const rankRow = this.db.prepare("select * from leaderboard_entries where user_id = ?").get(userId) as
+    const userRow = this.db.prepare("select * from waitlist_users where id = ?").get(userId) as UserRow | undefined;
+    const rankRow = this.db.prepare("select * from waitlist_leaderboard_entries where user_id = ?").get(userId) as
       | LeaderboardRow
       | undefined;
 
@@ -428,12 +428,12 @@ class SqliteAdapter implements DbAdapter {
 
   async getLeaderboard(input: { limit: number; currentUserId?: string | null }): Promise<LeaderboardEntry[]> {
     const rows = this.db
-      .prepare("select * from leaderboard_entries order by rank asc limit ?")
+      .prepare("select * from waitlist_leaderboard_entries order by rank asc limit ?")
       .all(input.limit) as LeaderboardRow[];
 
     if (input.currentUserId && !rows.some((row) => row.user_id === input.currentUserId)) {
       const currentRow = this.db
-        .prepare("select * from leaderboard_entries where user_id = ?")
+        .prepare("select * from waitlist_leaderboard_entries where user_id = ?")
         .get(input.currentUserId) as LeaderboardRow | undefined;
       if (currentRow) rows.push(currentRow);
     }
@@ -448,18 +448,18 @@ class SqliteAdapter implements DbAdapter {
 
   private ensureStats(userId: string): void {
     this.db
-      .prepare("insert or ignore into leaderboard_stats (user_id, verified_invites_count) values (?, 0)")
+      .prepare("insert or ignore into waitlist_leaderboard_stats (user_id, verified_invites_count) values (?, 0)")
       .run(userId);
   }
 
   private refreshStats(userId: string): void {
     const row = this.db
-      .prepare("select count(*) as count from referrals where referrer_user_id = ? and status = 'verified'")
+      .prepare("select count(*) as count from waitlist_referrals where referrer_user_id = ? and status = 'verified'")
       .get(userId) as { count: number };
 
     this.db
       .prepare(
-        `insert into leaderboard_stats (user_id, verified_invites_count, updated_at)
+        `insert into waitlist_leaderboard_stats (user_id, verified_invites_count, updated_at)
          values (?, ?, current_timestamp)
          on conflict(user_id) do update set
            verified_invites_count = excluded.verified_invites_count,
@@ -470,7 +470,7 @@ class SqliteAdapter implements DbAdapter {
 
   private ensureSchema(): void {
     this.db.exec(`
-      create table if not exists users (
+      create table if not exists waitlist_users (
         id text primary key,
         privy_user_id text not null unique,
         email text,
@@ -482,7 +482,7 @@ class SqliteAdapter implements DbAdapter {
         last_login_at text not null default current_timestamp
       );
 
-      create table if not exists referral_visits (
+      create table if not exists waitlist_referral_visits (
         id text primary key,
         referral_code text not null,
         visitor_fingerprint_hash text,
@@ -491,27 +491,27 @@ class SqliteAdapter implements DbAdapter {
         created_at text not null default current_timestamp
       );
 
-      create table if not exists referrals (
+      create table if not exists waitlist_referrals (
         id text primary key,
-        referrer_user_id text not null references users(id) on delete cascade,
-        referred_user_id text not null unique references users(id) on delete cascade,
+        referrer_user_id text not null references waitlist_users(id) on delete cascade,
+        referred_user_id text not null unique references waitlist_users(id) on delete cascade,
         referral_code text not null,
         status text not null check (status = 'verified'),
         created_at text not null default current_timestamp,
         check (referrer_user_id <> referred_user_id)
       );
 
-      create table if not exists leaderboard_stats (
-        user_id text primary key references users(id) on delete cascade,
+      create table if not exists waitlist_leaderboard_stats (
+        user_id text primary key references waitlist_users(id) on delete cascade,
         verified_invites_count integer not null default 0,
         rank_cache integer,
         updated_at text not null default current_timestamp
       );
 
-      create index if not exists referrals_referrer_status_idx on referrals(referrer_user_id, status);
-      create index if not exists referral_visits_code_created_idx on referral_visits(referral_code, created_at);
+      create index if not exists waitlist_referrals_referrer_status_idx on waitlist_referrals(referrer_user_id, status);
+      create index if not exists waitlist_referral_visits_code_created_idx on waitlist_referral_visits(referral_code, created_at);
 
-      create view if not exists leaderboard_entries as
+      create view if not exists waitlist_leaderboard_entries as
         select
           row_number() over (
             order by coalesce(ls.verified_invites_count, 0) desc, u.created_at asc
@@ -521,8 +521,8 @@ class SqliteAdapter implements DbAdapter {
           u.avatar_url,
           u.referral_code,
           coalesce(ls.verified_invites_count, 0) as invites
-        from users u
-        left join leaderboard_stats ls on ls.user_id = u.id;
+        from waitlist_users u
+        left join waitlist_leaderboard_stats ls on ls.user_id = u.id;
     `);
   }
 }
