@@ -72,6 +72,12 @@ export function getDb(): DbAdapter {
     return adapter;
   }
 
+  if (process.env.NODE_ENV === "production") {
+    throw new Error(
+      "Supabase is required in production. Set SUPABASE_URL or NEXT_PUBLIC_SUPABASE_URL, plus SUPABASE_SERVICE_ROLE_KEY.",
+    );
+  }
+
   adapter = new SqliteAdapter(getOptionalEnv("SQLITE_BACKUP_PATH") ?? "sqlite:.data/perminal.sqlite");
   return adapter;
 }

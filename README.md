@@ -72,8 +72,10 @@ SQLITE_BACKUP_PATH=.data/perminal-backup.sqlite
 adapter reads `SUPABASE_URL` first and falls back to `EXPO_PUBLIC_SUPABASE_URL`. The anon key is
 public/client-safe, but authenticated waitlist writes still require `SUPABASE_SERVICE_ROLE_KEY` on
 the server. Use `DATABASE_URL=sqlite:.data/perminal.sqlite` for local SQLite development. In
-production, omit SQLite as the writer and use Supabase; `SQLITE_BACKUP_PATH` is only read when the
-public leaderboard needs a snapshot fallback.
+production, omit SQLite as the writer and use Supabase. The app intentionally fails closed in
+production if Supabase service credentials are missing, because a serverless SQLite fallback can
+mint different referral links for the same Privy user across instances. `SQLITE_BACKUP_PATH` is only
+read when the public leaderboard needs a snapshot fallback after Supabase is already configured.
 
 Waitlist data intentionally uses prefixed tables so it can live in the same Supabase project as
 the mobile app without colliding with app-owned tables:
