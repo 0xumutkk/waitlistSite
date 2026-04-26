@@ -61,7 +61,10 @@ export function getDb(): DbAdapter {
     return adapter;
   }
 
-  const supabaseUrl = getOptionalEnv("SUPABASE_URL");
+  const supabaseUrl =
+    getOptionalEnv("SUPABASE_URL") ??
+    getOptionalEnv("EXPO_PUBLIC_SUPABASE_URL") ??
+    getOptionalEnv("NEXT_PUBLIC_SUPABASE_URL");
   const supabaseServiceRoleKey = getOptionalEnv("SUPABASE_SERVICE_ROLE_KEY");
 
   if (supabaseUrl && supabaseServiceRoleKey) {

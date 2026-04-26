@@ -60,15 +60,20 @@ PRIVY_APP_ID=
 PRIVY_API_KEY=
 PRIVY_JWT_VERIFICATION_KEY=
 SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_URL=
+EXPO_PUBLIC_SUPABASE_ANON_KEY=
 SUPABASE_SERVICE_ROLE_KEY=
 DATABASE_URL=
 REFERRAL_COOKIE_SECRET=
 SQLITE_BACKUP_PATH=.data/perminal-backup.sqlite
 ```
 
-Use `DATABASE_URL=sqlite:.data/perminal.sqlite` for local SQLite development. In production,
-omit SQLite as the writer and use Supabase; `SQLITE_BACKUP_PATH` is only read when the public
-leaderboard needs a snapshot fallback.
+`SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_URL` can point to the same Supabase project; the server
+adapter reads `SUPABASE_URL` first and falls back to `EXPO_PUBLIC_SUPABASE_URL`. The anon key is
+public/client-safe, but authenticated waitlist writes still require `SUPABASE_SERVICE_ROLE_KEY` on
+the server. Use `DATABASE_URL=sqlite:.data/perminal.sqlite` for local SQLite development. In
+production, omit SQLite as the writer and use Supabase; `SQLITE_BACKUP_PATH` is only read when the
+public leaderboard needs a snapshot fallback.
 
 Waitlist data intentionally uses prefixed tables so it can live in the same Supabase project as
 the mobile app without colliding with app-owned tables:
