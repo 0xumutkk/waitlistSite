@@ -52,7 +52,7 @@ npm run backup:sqlite # export leaderboard snapshot from Supabase
 
 ## Backend setup
 
-Create the Supabase schema with `supabase/migrations/001_referrals.sql`, then configure:
+Create the Supabase schema with `supabase/migrations/005_waitlist_referrals.sql`, then configure:
 
 ```bash
 NEXT_PUBLIC_PRIVY_APP_ID=
