@@ -298,7 +298,7 @@ export function SuccessCard({
             <div className="flex w-full gap-[8.512px]">
               <div className="flex h-[58.279px] min-w-0 flex-1 items-center overflow-hidden rounded-[17.024px] bg-white py-[13.619px] pl-[4.256px] pr-[17.024px]">
                 <div className="flex min-w-0 items-center gap-[8.512px]">
-                  <div className={`relative h-[49.581px] w-[47.477px] shrink-0 overflow-hidden rounded-[12.768px] ${avatarUrl ? "bg-black/5" : "bg-black/10 animate-pulse"}`}>
+                  <div className="relative h-[49.581px] w-[47.477px] shrink-0 overflow-hidden rounded-[12.768px] bg-[#e6e6e6]">
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={avatarUrl || "/waitlist-avatar.png"}
@@ -416,7 +416,7 @@ export function SuccessCard({
           <div className="flex w-full gap-[7.8px]">
             <div className="flex h-[52.6px] min-w-0 flex-1 items-center rounded-[15.7px] bg-white px-[4px]">
               <div className="flex items-center gap-[7.8px]">
-                <div className={`relative size-[44.7px] shrink-0 overflow-hidden rounded-[11.8px] ${avatarUrl ? "bg-black/5" : "bg-black/10 animate-pulse"}`}>
+                <div className="relative size-[44.7px] shrink-0 overflow-hidden rounded-[11.8px] bg-[#e6e6e6]">
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={avatarUrl || "/waitlist-avatar.png"}
