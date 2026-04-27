@@ -33,6 +33,7 @@ const itcGaramond = localFont({
 });
 
 export const metadata: Metadata = {
+  icons: { icon: "/favicon.ico" },
   title: "Perminal — Trade What Happens. Together.",
   description:
     "Perminal is the social prediction market. Trade politics, crypto, and world events. Follow top predictors, copy their trades, and earn when people follow you.",
@@ -41,6 +42,7 @@ export const metadata: Metadata = {
     description:
       "The social prediction market. Trade politics, crypto, and world events — together.",
     type: "website",
+    images: [],
   },
 };
 
