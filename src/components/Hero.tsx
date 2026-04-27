@@ -74,15 +74,6 @@ export function Hero({
         data-node-id="265:8196"
         data-name="Heading 1"
       >
-        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/hero-hands-transparent.png"
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
-
         <div className="absolute left-1/2 top-[110px] z-10 flex h-[100px] w-[291px] -translate-x-1/2 flex-col items-center">
           <h1 className="w-full text-center font-display text-[44px] font-light leading-[0.73] tracking-[-0.64px] text-black">
             Trade What Happens. Together.

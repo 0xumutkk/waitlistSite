@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 interface LeaderboardEntry {
   rank: number;
   username: string;
@@ -20,8 +22,21 @@ const FALLBACK_ENTRIES: LeaderboardEntry[] = [
 ];
 
 export function Leaderboard({ entries, isLoading, referralLink, onCopyReferral }: LeaderboardProps) {
+  const [isCopied, setIsCopied] = useState(false);
   const displayEntries = entries.length > 0 ? entries : FALLBACK_ENTRIES;
   const referralText = referralLink ?? "Sign in to claim your link";
+
+  const handleCopy = () => {
+    if (!onCopyReferral) return;
+    onCopyReferral();
+    setIsCopied(true);
+  };
+
+  useEffect(() => {
+    if (!isCopied) return;
+    const timeout = setTimeout(() => setIsCopied(false), 2000);
+    return () => clearTimeout(timeout);
+  }, [isCopied]);
 
   return (
     <div className="flex h-[817px] w-full flex-col justify-between overflow-hidden rounded-[12px] bg-white/60 p-[12px] md:h-full md:w-[370px]">
@@ -106,15 +121,21 @@ export function Leaderboard({ entries, isLoading, referralLink, onCopyReferral }
           <div className="flex-1 h-[40px] bg-black/5 rounded-[8px] flex items-center justify-between px-[15px]">
             <span className="truncate pr-2 text-[14px] font-medium text-black leading-[22px]">{referralText}</span>
             <button
-              onClick={onCopyReferral}
+              onClick={handleCopy}
               disabled={!referralLink}
               aria-label="Copy referral link"
-              className="text-black/60 hover:text-black disabled:cursor-not-allowed disabled:opacity-40 transition-colors"
+              className={`${isCopied ? "text-[#34c759]" : "text-black/60 hover:text-black"} disabled:cursor-not-allowed disabled:opacity-40 transition-colors`}
             >
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-                <rect x="4.5" y="4.5" width="8" height="8" rx="1.5" ry="1.5"/>
-                <path d="M4.5 9.5H3C2.17157 9.5 1.5 8.82843 1.5 8V3C1.5 2.17157 2.17157 1.5 3 1.5H8C8.82843 1.5 9.5 2.17157 9.5 3V4.5"/>
-              </svg>
+              {isCopied ? (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="10 4 5 9 3 7" />
+                </svg>
+              ) : (
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="4.5" y="4.5" width="8" height="8" rx="1.5" ry="1.5"/>
+                  <path d="M4.5 9.5H3C2.17157 9.5 1.5 8.82843 1.5 8V3C1.5 2.17157 2.17157 1.5 3 1.5H8C8.82843 1.5 9.5 2.17157 9.5 3V4.5"/>
+                </svg>
+              )}
             </button>
           </div>
         </div>

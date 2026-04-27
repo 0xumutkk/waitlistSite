@@ -38,11 +38,11 @@ export function Providers({ children }: { children: React.ReactNode }) {
     <PrivyProvider
       appId={appId}
       config={{
-        loginMethods: ["email", "twitter"],
+        loginMethods: ["twitter"],
         appearance: {
           accentColor: "#36bf5a",
           landingHeader: "Join Perminal",
-          loginMessage: "Sign in with email or X to claim your invite link.",
+          loginMessage: "Connect X to claim your invite link.",
           theme: "light",
         },
       }}

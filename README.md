@@ -7,7 +7,7 @@ Marketing site for Perminal, the social prediction market. Built from the [Figma
 - Next.js 16 (App Router, Turbopack)
 - React 19 + TypeScript
 - Tailwind CSS v4
-- Privy auth for email + X/Twitter login
+- Privy auth for X/Twitter-only waitlist login
 - Supabase Postgres as the referral backend
 - SQLite for local development and leaderboard backup snapshots
 - `next/font` for Geist (UI) + EB Garamond (display serif used for the hero)
@@ -22,7 +22,7 @@ src/
 │   └── globals.css        Design tokens + global styles
 └── components/
     ├── Header.tsx         Perminal wordmark + X link
-    ├── Hero.tsx           "Trade What Happens. Together." + email capture + counter
+    ├── Hero.tsx           "Trade What Happens. Together." + X waitlist CTA
     ├── FeatureScroller.tsx   Horizontally scrolling feature row
     └── features/
         ├── shared.tsx

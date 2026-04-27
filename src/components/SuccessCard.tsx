@@ -321,12 +321,12 @@ export function SuccessCard({
           </div>
         </div>
 
-        <div className="flex h-[38px] w-full shrink-0 items-start gap-[6px]">
+        <div className="grid h-[38px] w-full shrink-0 grid-cols-4 gap-[6px]">
           <button
             type="button"
             onClick={handleShareOnX}
             disabled={!hasReferralLink}
-            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#36bf5a] px-[12px] py-[6px] text-white transition-colors hover:bg-[#2fa64e] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-[38px] min-w-0 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#36bf5a] px-[6px] py-[6px] text-white transition-colors hover:bg-[#2fa64e] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="flex items-center gap-[3px]">
               <span className="relative size-[14.603px] shrink-0">
@@ -347,7 +347,7 @@ export function SuccessCard({
             type="button"
             onClick={handleCopyReferral}
             disabled={!hasReferralLink}
-            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[12px] py-[6px] text-black transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex h-[38px] min-w-0 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[6px] py-[6px] text-black transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50"
           >
             <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
               {copyLabel}
@@ -357,10 +357,20 @@ export function SuccessCard({
           <button
             type="button"
             onClick={handleDownload}
-            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[12px] py-[6px] text-black transition-colors hover:bg-[#ebebeb]"
+            className="flex h-[38px] min-w-0 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[6px] py-[6px] text-black transition-colors hover:bg-[#ebebeb]"
           >
             <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
               Download
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={onLogout}
+            className="flex h-[38px] min-w-0 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#ff3b30]/50 px-[6px] py-[6px] text-white transition-colors hover:bg-[#ff3b30]/70"
+          >
+            <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+              Log out
             </span>
           </button>
         </div>

@@ -17,6 +17,14 @@ export async function POST() {
 
   const privyUserId = await verifyPrivyRequest(authToken);
   const profile = await getPrivyProfile(privyUserId);
+
+  if (!profile.twitterUsername) {
+    return NextResponse.json(
+      { error: "X account is required to join the waitlist" },
+      { status: 403 },
+    );
+  }
+
   const db = getDb();
   const { user, isNew } = await db.upsertUser(profile);
 
