@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     description:
       "The social prediction market. Trade politics, crypto, and world events — together.",
     type: "website",
-    images: [],
+    images: [{ url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", width: 1, height: 1 }],
   },
 };
 
