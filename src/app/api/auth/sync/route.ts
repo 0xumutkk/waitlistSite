@@ -5,12 +5,20 @@ import { REFERRAL_COOKIE_NAME, readReferralCookieValue } from "@/lib/referrals/c
 import { getDb } from "@/lib/server/db";
 import { getBearerToken, getPrivyProfile, verifyPrivyRequest } from "@/lib/server/privy";
 import { getAppUrl } from "@/lib/server/env";
-import { rateLimiter } from "@/lib/server/ratelimit";
+import { getClientIp, globalRateLimiter, rateLimiter } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
 export async function POST() {
   const requestHeaders = await headers();
+
+  // 1. Rate Limiting
+  const ip = getClientIp(requestHeaders);
+  const { success } = await globalRateLimiter.limit(ip);
+  if (!success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const authToken = getBearerToken(requestHeaders);
 
   if (!authToken) {

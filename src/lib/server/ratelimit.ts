@@ -1,6 +1,12 @@
+import type { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
+
 import { getOptionalEnv } from "@/lib/server/env";
 
 type RateLimitResult = { success: boolean; remaining: number };
+
+export function getClientIp(headers: ReadonlyHeaders): string {
+  return headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+}
 
 // In-memory sliding window — works per-instance, sufficient for low-traffic deploys.
 // For multi-instance production, set UPSTASH_REDIS_REST_URL + UPSTASH_REDIS_REST_TOKEN.
@@ -51,4 +57,9 @@ export const rateLimiter = {
   leaderboard: (ip: string) => check(`leaderboard:${ip}`, { limit: 30, windowSeconds: 60 }),
   // Me endpoint: 20 requests per minute per user
   me: (userId: string) => check(`me:${userId}`, { limit: 20, windowSeconds: 60 }),
+};
+
+// IP-based gate before token verification — prevents bots from reaching Privy auth
+export const globalRateLimiter = {
+  limit: (ip: string) => check(`global:${ip}`, { limit: 20, windowSeconds: 60 }),
 };
