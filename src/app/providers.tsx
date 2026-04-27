@@ -8,6 +8,7 @@ type AuthContextValue = {
   authenticated: boolean;
   getAccessToken: () => Promise<string | null>;
   login: () => void;
+  logout: () => Promise<void>;
 };
 
 const defaultAuthContextValue: AuthContextValue = {
@@ -17,6 +18,7 @@ const defaultAuthContextValue: AuthContextValue = {
   login: () => {
     console.warn("NEXT_PUBLIC_PRIVY_APP_ID is not configured.");
   },
+  logout: async () => {},
 };
 
 const AuthContext = createContext<AuthContextValue>(defaultAuthContextValue);
@@ -51,10 +53,10 @@ export function Providers({ children }: { children: React.ReactNode }) {
 }
 
 function PrivyAuthBridge({ children }: { children: React.ReactNode }) {
-  const { authenticated, getAccessToken, login, ready } = usePrivy();
+  const { authenticated, getAccessToken, login, logout, ready } = usePrivy();
 
   return (
-    <AuthContext.Provider value={{ authenticated, getAccessToken, login, ready }}>
+    <AuthContext.Provider value={{ authenticated, getAccessToken, login, logout, ready }}>
       {children}
     </AuthContext.Provider>
   );

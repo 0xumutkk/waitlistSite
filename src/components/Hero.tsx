@@ -11,6 +11,7 @@ interface HeroProps {
   rank?: string;
   referralLink?: string;
   onCopyReferral?: () => void;
+  onLogout?: () => void;
 }
 
 function CtaIcon({ isJoined }: { isJoined: boolean }) {
@@ -47,29 +48,42 @@ export function Hero({
   avatarUrl,
   rank,
   referralLink,
-  onCopyReferral
+  onCopyReferral,
+  onLogout
 }: HeroProps) {
   const ctaText = "Join Waitlist";
 
   if (variant === "mobile") {
+    if (isJoined) {
+      return (
+        <SuccessCard
+          username={username}
+          avatarUrl={avatarUrl}
+          rank={rank}
+          referralLink={referralLink}
+          onCopyReferral={onCopyReferral}
+          onLogout={onLogout}
+          variant="mobile"
+        />
+      );
+    }
+
     return (
       <section
         className="relative h-[364px] w-full overflow-hidden rounded-[12px] bg-white/30 backdrop-blur-[24px]"
         data-node-id="265:8196"
         data-name="Heading 1"
       >
-        {!isJoined && (
-          <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/hero-hands-transparent.png"
-              alt=""
-              className="absolute inset-0 h-full w-full object-cover"
-            />
-          </div>
-        )}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 select-none">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/hero-hands-transparent.png"
+            alt=""
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
 
-        <div className={`absolute left-1/2 z-10 flex -translate-x-1/2 flex-col items-center ${isJoined ? "top-[154px]" : "top-[110px] h-[100px] w-[291px]"}`}>
+        <div className="absolute left-1/2 top-[110px] z-10 flex h-[100px] w-[291px] -translate-x-1/2 flex-col items-center">
           <h1 className="w-full text-center font-display text-[44px] font-light leading-[0.73] tracking-[-0.64px] text-black">
             Trade What Happens. Together.
           </h1>
@@ -88,31 +102,19 @@ export function Hero({
             </div>
           </div>
 
-          {isJoined ? (
-            <div className="mt-[24px] origin-top scale-[0.68] min-[390px]:scale-[0.72] min-[430px]:scale-[0.78] sm:scale-90">
-              <SuccessCard 
-                username={username}
-                avatarUrl={avatarUrl}
-                rank={rank}
-                referralLink={referralLink}
-                onCopyReferral={onCopyReferral}
-              />
-            </div>
-          ) : (
-            <div className="mt-[16px] h-[52px] rounded-[18px] border border-[rgba(0,0,0,0.15)] bg-white p-2">
-              <button
-                onClick={onJoin}
-                className="flex h-[36px] cursor-pointer items-center gap-[8px] rounded-[10px] border-none bg-[#36bf5a] py-[8px] pl-[12px] pr-[16px] no-underline transition-all hover:bg-[#2fa64e] active:scale-95"
-              >
-                <div className="relative size-[19.47px] shrink-0">
-                  <CtaIcon isJoined={isJoined} />
-                </div>
-                <span className="whitespace-nowrap text-[15px] font-medium leading-[20px] text-white">
-                  {ctaText}
-                </span>
-              </button>
-            </div>
-          )}
+          <div className="mt-[16px] h-[52px] rounded-[18px] border border-[rgba(0,0,0,0.15)] bg-white p-2">
+            <button
+              onClick={onJoin}
+              className="flex h-[36px] cursor-pointer items-center gap-[8px] rounded-[10px] border-none bg-[#36bf5a] py-[8px] pl-[12px] pr-[16px] no-underline transition-all hover:bg-[#2fa64e] active:scale-95"
+            >
+              <div className="relative size-[19.47px] shrink-0">
+                <CtaIcon isJoined={isJoined} />
+              </div>
+              <span className="whitespace-nowrap text-[15px] font-medium leading-[20px] text-white">
+                {ctaText}
+              </span>
+            </button>
+          </div>
         </div>
       </section>
     );
@@ -165,6 +167,7 @@ export function Hero({
                 rank={rank}
                 referralLink={referralLink}
                 onCopyReferral={onCopyReferral}
+                onLogout={onLogout}
               />
             </div>
           ) : (

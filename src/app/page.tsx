@@ -16,7 +16,7 @@ export default function Home() {
   const [me, setMe] = useState<MeResponse | null>(null);
   const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
   const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(true);
-  const { authenticated, getAccessToken, login, ready } = usePerminalAuth();
+  const { authenticated, getAccessToken, login, logout, ready } = usePerminalAuth();
   const referralLink = me?.referralLink;
 
   const authHeaders = useCallback(async (): Promise<HeadersInit> => {
@@ -67,6 +67,16 @@ export default function Home() {
   }, [refreshLeaderboard]);
 
   useEffect(() => {
+    if (!ready || authenticated) return;
+
+    queueMicrotask(() => {
+      setMe(null);
+      setDidRequestJoin(false);
+      window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
+    });
+  }, [authenticated, ready]);
+
+  useEffect(() => {
     if (!ready || !authenticated) return;
 
     queueMicrotask(() => {
@@ -108,6 +118,15 @@ export default function Home() {
     login();
   }, [authenticated, login, syncUser]);
 
+  const handleLogout = useCallback(() => {
+    setMe(null);
+    setDidRequestJoin(false);
+    window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
+    void logout().finally(() => {
+      void refreshLeaderboard();
+    });
+  }, [logout, refreshLeaderboard]);
+
   const modalUsername = useMemo(() => {
     if (!me) return undefined;
     return me.user.twitterUsername ? `@${me.user.twitterUsername}` : me.user.displayName;
@@ -145,6 +164,7 @@ export default function Home() {
             rank={me ? `#${me.rank.toLocaleString()}` : undefined}
             referralLink={referralLink}
             onCopyReferral={copyReferral}
+            onLogout={handleLogout}
           />
 
           <div className="h-[417.595px] w-full">
@@ -181,6 +201,7 @@ export default function Home() {
                 rank={me ? `#${me.rank.toLocaleString()}` : undefined}
                 referralLink={referralLink}
                 onCopyReferral={copyReferral}
+                onLogout={handleLogout}
               />
 
               <div className="min-h-0 flex-1">

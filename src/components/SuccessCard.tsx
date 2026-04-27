@@ -9,6 +9,8 @@ export interface SuccessCardProps {
   rank?: string;
   referralLink?: string;
   onCopyReferral?: () => void;
+  onLogout?: () => void;
+  variant?: "desktop" | "mobile";
 }
 
 const UNDERLINE_BACKGROUND_IMAGE =
@@ -121,11 +123,10 @@ async function renderCardToBlob(
 
   // "Joined Waitlist" text
   ctx.fillStyle = "#000000";
-  ctx.font = "300 33px 'Inter', sans-serif";
+  ctx.font = "300 31px 'Inter', sans-serif";
   ctx.textAlign = "center";
   ctx.textBaseline = "middle";
-  ctx.fillText("Joined", W / 2, 55);
-  ctx.fillText("Waitlist", W / 2, 88);
+  ctx.fillText("Joined Waitlist", W / 2, 74);
 
   // Bottom white pill - username
   const pillY = 118.5;
@@ -183,6 +184,8 @@ export function SuccessCard({
   avatarUrl,
   rank = "---",
   referralLink,
+  onLogout,
+  variant = "desktop",
 }: SuccessCardProps) {
   const busyRef = useRef(false);
   const copyResetRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -250,6 +253,121 @@ export function SuccessCard({
     }
   }, [getBlob]);
 
+  if (variant === "mobile") {
+    return (
+      <div
+        className="flex h-[260px] w-full flex-col items-center justify-center gap-[8px] overflow-hidden rounded-[12px] bg-white/60 p-[8px]"
+        data-node-id="280:1592"
+        data-name="Heading 3"
+      >
+        <div
+          className="relative h-[197.297px] w-full shrink-0 overflow-hidden rounded-[9.76px] bg-[#f5f5f5]"
+          data-node-id="280:1593"
+          data-name="Preview"
+        >
+          <div className="absolute left-0 top-0 flex items-end gap-[1.397px] p-[13.013px]">
+            <div className="relative h-[18.738px] w-[93.987px] shrink-0">
+              <Image
+                src="/perminal-wordmark.svg"
+                alt="Perminal"
+                fill
+                className="object-fill"
+              />
+            </div>
+            <div className="relative h-[3.65px] w-[14.48px] shrink-0">
+              <div
+                className="absolute inset-0"
+                data-node-id="280:1618"
+                style={{ backgroundImage: UNDERLINE_BACKGROUND_IMAGE }}
+              />
+              <div
+                className="absolute inset-0 blur-[0.637px]"
+                data-node-id="280:1619"
+                style={{ backgroundImage: UNDERLINE_BACKGROUND_IMAGE }}
+              />
+            </div>
+          </div>
+
+          <div className="absolute left-1/2 top-[82.65px] flex h-[74px] w-[190px] -translate-x-1/2 -translate-y-1/2 items-center justify-center text-center">
+            <p className="whitespace-nowrap font-display text-[35.656px] font-light leading-[83.59%] tracking-[-0.535px] text-black">
+              Joined Waitlist
+            </p>
+          </div>
+
+          <div className="absolute left-0 top-[123.78px] w-full p-[7.378px]">
+            <div className="flex w-full gap-[8.512px]">
+              <div className="flex h-[58.279px] min-w-0 flex-1 items-center overflow-hidden rounded-[17.024px] bg-white py-[13.619px] pl-[4.256px] pr-[17.024px]">
+                <div className="flex min-w-0 items-center gap-[8.512px]">
+                  <div className="relative h-[49.581px] w-[47.477px] shrink-0 overflow-hidden rounded-[12.768px] bg-[#e6e6e6]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={avatarUrl || "/waitlist-avatar.png"}
+                      alt=""
+                      className="absolute inset-0 h-full w-full object-cover object-[50%_54%]"
+                    />
+                  </div>
+                  <p className="truncate text-center text-[17.875px] font-semibold leading-normal tracking-[-0.568px] text-black/80">
+                    {username}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex h-[58.435px] w-[79.42px] shrink-0 items-center justify-center overflow-hidden rounded-[17.024px] bg-white px-[7.378px] py-[13.619px]">
+                <p className="whitespace-nowrap text-center text-[14.757px] font-medium leading-normal tracking-[-0.568px] text-black/40">
+                  {rank}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="flex h-[38px] w-full shrink-0 items-start gap-[6px]">
+          <button
+            type="button"
+            onClick={handleShareOnX}
+            disabled={!hasReferralLink}
+            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#36bf5a] px-[12px] py-[6px] text-white transition-colors hover:bg-[#2fa64e] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="flex items-center gap-[3px]">
+              <span className="relative size-[14.603px] shrink-0">
+                <Image
+                  src="/x-logo-white.svg"
+                  alt=""
+                  fill
+                  className="object-contain"
+                />
+              </span>
+              <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+                Share on X
+              </span>
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleCopyReferral}
+            disabled={!hasReferralLink}
+            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[12px] py-[6px] text-black transition-colors hover:bg-[#ebebeb] disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+              {copyLabel}
+            </span>
+          </button>
+
+          <button
+            type="button"
+            onClick={handleDownload}
+            className="flex h-[38px] min-w-0 flex-1 items-center justify-center overflow-hidden rounded-[7.5px] bg-[#f5f5f5] px-[12px] py-[6px] text-black transition-colors hover:bg-[#ebebeb]"
+          >
+            <span className="whitespace-nowrap text-[11.25px] font-medium leading-[15px]">
+              Download
+            </span>
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div
       className="relative flex items-start justify-end gap-[6px] rounded-[13.5px] border-[0.75px] border-black/15 bg-white p-[6px] shadow-[0_3px_3px_rgba(0,0,0,0.1)]"
@@ -278,9 +396,9 @@ export function SuccessCard({
           </div>
         </div>
 
-        <div className="absolute inset-x-0 top-[40.7px] flex flex-col items-center justify-center text-center">
-          <p className="font-display text-[32.881px] font-light leading-[1.02] tracking-[-0.49px] text-black">
-            Joined<br />Waitlist
+        <div className="absolute inset-x-0 top-[62.1px] flex items-center justify-center text-center">
+          <p className="whitespace-nowrap font-display text-[32.881px] font-light leading-[0.836] tracking-[-0.493px] text-black">
+            Joined Waitlist
           </p>
         </div>
 
@@ -352,6 +470,16 @@ export function SuccessCard({
         >
           <span className="text-center text-[11.25px] font-medium leading-[1.2]">
             Download
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={onLogout}
+          className="flex flex-1 items-center justify-center rounded-[7.5px] bg-[#ff3b30]/50 text-white transition-colors hover:bg-[#ff3b30]/70"
+        >
+          <span className="text-center text-[11.25px] font-medium leading-[1.2]">
+            Log out
           </span>
         </button>
       </div>
