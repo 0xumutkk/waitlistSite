@@ -113,13 +113,22 @@ async function renderCardToBlob(
     // silently skip logo
   }
 
-  // Rainbow underline
-  const grad = ctx.createLinearGradient(12, 0, 12 + 13.6, 0);
+  // Rainbow underline - aligned to the bottom-right of the logo
+  const logoWidth = 88.57;
+  const logoHeight = 16.91;
+  const logoX = 12;
+  const logoY = 12;
+  const gap = 1.7;
+  const underlineWidth = 13.6;
+  const underlineHeight = 3.3;
+
+  const grad = ctx.createLinearGradient(logoX + logoWidth + gap, 0, logoX + logoWidth + gap + underlineWidth, 0);
   for (const [stop, color] of GRADIENT_STOPS) {
     grad.addColorStop(stop, color);
   }
   ctx.fillStyle = grad;
-  ctx.fillRect(12, 29.3, 13.6, 3.3);
+  // Align bottom: y = (logoY + logoHeight) - underlineHeight
+  ctx.fillRect(logoX + logoWidth + gap, logoY + logoHeight - underlineHeight, underlineWidth, underlineHeight);
 
   // "Joined Waitlist" text
   ctx.fillStyle = "#000000";
@@ -256,7 +265,7 @@ export function SuccessCard({
   if (variant === "mobile") {
     return (
       <div
-        className="flex h-[260px] w-full flex-col items-center justify-center gap-[8px] overflow-hidden rounded-[12px] bg-white/60 p-[8px]"
+        className="flex h-[260px] w-full flex-col items-center justify-center gap-[8px] overflow-hidden rounded-[12px] bg-white/60 p-[8px] backdrop-blur-[24px]"
         data-node-id="280:1592"
         data-name="Heading 3"
       >
@@ -380,12 +389,12 @@ export function SuccessCard({
 
   return (
     <div
-      className="relative flex items-start justify-end gap-[6px] rounded-[13.5px] border-[0.75px] border-black/15 bg-white p-[6px] shadow-[0_3px_3px_rgba(0,0,0,0.1)]"
+      className="relative flex items-start justify-end gap-[6px] rounded-[13.5px] border-[0.75px] border-black/15 bg-white/80 p-[6px] shadow-[0_3px_3px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
       data-node-id="264:5456"
       onClick={(event) => event.stopPropagation()}
     >
       <div className="relative h-[178.038px] w-[340.2px] shrink-0 overflow-hidden rounded-[9px] bg-[#f5f5f5]">
-        <div className="absolute left-0 top-0 flex items-center gap-[4px] p-[12px]">
+        <div className="absolute left-0 top-0 flex items-end gap-[1.7px] p-[12px]">
           <div className="relative h-[16.909px] w-[88.571px] shrink-0">
             <Image
               src="/perminal-wordmark.svg"
