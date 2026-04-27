@@ -311,17 +311,7 @@ class SupabaseAdapter implements DbAdapter {
   }
 
   private async refreshStats(userId: string): Promise<void> {
-    const { count, error: countError } = await this.client
-      .from("waitlist_referrals")
-      .select("id", { count: "exact", head: true })
-      .eq("referrer_user_id", userId)
-      .eq("status", "verified");
-
-    if (countError) throw countError;
-
-    const { error } = await this.client
-      .from("waitlist_leaderboard_stats")
-      .upsert({ user_id: userId, verified_invites_count: count ?? 0, updated_at: new Date().toISOString() });
+    const { error } = await this.client.rpc("increment_invite_count", { p_user_id: userId });
     if (error) throw error;
   }
 }

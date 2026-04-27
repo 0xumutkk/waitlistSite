@@ -4,6 +4,8 @@ import { NextResponse } from "next/server";
 import { REFERRAL_COOKIE_NAME, readReferralCookieValue } from "@/lib/referrals/cookie";
 import { getDb } from "@/lib/server/db";
 import { getBearerToken, getPrivyProfile, verifyPrivyRequest } from "@/lib/server/privy";
+import { getAppUrl } from "@/lib/server/env";
+import { rateLimiter } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
@@ -16,6 +18,12 @@ export async function POST() {
   }
 
   const privyUserId = await verifyPrivyRequest(authToken);
+
+  const rl = await rateLimiter.authSync(privyUserId);
+  if (!rl.success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const profile = await getPrivyProfile(privyUserId);
 
   if (!profile.twitterUsername) {
@@ -45,6 +53,6 @@ export async function POST() {
     cookieStore.delete(REFERRAL_COOKIE_NAME);
   }
 
-  const me = await db.getMe(user.id, requestHeaders.get("origin") ?? "http://localhost:3000");
+  const me = await db.getMe(user.id, getAppUrl());
   return NextResponse.json(me);
 }

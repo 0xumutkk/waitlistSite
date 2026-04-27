@@ -56,7 +56,24 @@ export function Leaderboard({ entries, isLoading, referralLink, onCopyReferral }
         
         {/* Scrollable list (or just rows) */}
         <div className="flex flex-col w-full">
-          {displayEntries.map((entry, i) => {
+          {isLoading ? (
+            Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="flex items-center w-full border-b border-black/15 last:border-b-0 animate-pulse">
+                <div className="w-[72px] h-[56px] flex items-center justify-center border-r border-black/15 px-2">
+                  <div className="h-4 w-6 bg-black/10 rounded" />
+                </div>
+                <div className="w-[157px] h-[56px] flex items-center px-[8px] border-r border-black/15">
+                  <div className="flex items-center gap-[4px] pl-2 w-full justify-start">
+                    <div className="w-[20px] h-[20px] rounded-full bg-black/10" />
+                    <div className="h-4 w-20 bg-black/10 rounded" />
+                  </div>
+                </div>
+                <div className="h-[56px] flex-1 flex items-center justify-center px-[8px] md:w-[117px] md:flex-none">
+                  <div className="h-4 w-8 bg-black/10 rounded" />
+                </div>
+              </div>
+            ))
+          ) : displayEntries.map((entry, i) => {
             const isLast = i === displayEntries.length - 1;
             const bgClass = entry.isUser ? "bg-[#34c759]" : "bg-transparent";
             const textRankClass = entry.isUser ? "text-white" : "text-black/50";
@@ -80,7 +97,7 @@ export function Leaderboard({ entries, isLoading, referralLink, onCopyReferral }
                         // eslint-disable-next-line @next/next/no-img-element
                         <img src={entry.avatarUrl} alt="" className="h-full w-full object-cover" />
                       ) : (
-                        <div className="absolute inset-0 bg-black/10" />
+                        <div className="absolute inset-0 bg-black/10 animate-pulse" />
                       )}
                     </div>
                     <span className={`truncate text-[14px] font-medium leading-normal ${textNameClass}`}>

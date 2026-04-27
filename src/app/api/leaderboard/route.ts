@@ -3,10 +3,17 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { getDb } from "@/lib/server/db";
 import { getBearerToken, verifyPrivyRequest } from "@/lib/server/privy";
+import { rateLimiter } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
+  const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? "unknown";
+  const rl = await rateLimiter.leaderboard(ip);
+  if (!rl.success) {
+    return NextResponse.json({ error: "Too many requests" }, { status: 429 });
+  }
+
   const limitParam = Number(request.nextUrl.searchParams.get("limit") ?? "10");
   const limit = Number.isFinite(limitParam) ? Math.min(Math.max(limitParam, 1), 50) : 10;
   const requestHeaders = await headers();

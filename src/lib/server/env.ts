@@ -12,3 +12,7 @@ export function getOptionalEnv(name: string): string | undefined {
   return process.env[name] || undefined;
 }
 
+export function getAppUrl(): string {
+  return getOptionalEnv("NEXT_PUBLIC_APP_URL") ?? "http://localhost:3000";
+}
+
