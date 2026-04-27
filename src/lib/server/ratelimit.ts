@@ -23,8 +23,9 @@ function inMemoryLimit(key: string, limit: number, windowMs: number): RateLimitR
 type LimiterConfig = { limit: number; windowSeconds: number };
 
 async function check(key: string, config: LimiterConfig): Promise<RateLimitResult> {
-  const upstashUrl = getOptionalEnv("UPSTASH_REDIS_REST_URL");
-  const upstashToken = getOptionalEnv("UPSTASH_REDIS_REST_TOKEN");
+  // Vercel KV uses KV_REST_API_URL/TOKEN; fallback to UPSTASH_ prefix for manual setups
+  const upstashUrl = getOptionalEnv("KV_REST_API_URL") ?? getOptionalEnv("UPSTASH_REDIS_REST_URL");
+  const upstashToken = getOptionalEnv("KV_REST_API_TOKEN") ?? getOptionalEnv("UPSTASH_REDIS_REST_TOKEN");
 
   if (upstashUrl && upstashToken) {
     const { Ratelimit } = await import("@upstash/ratelimit");
