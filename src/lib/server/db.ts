@@ -5,7 +5,7 @@ import { dirname, resolve } from "node:path";
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import Database from "better-sqlite3";
 
-import { createReferralCode } from "@/lib/referrals/code";
+import { createReferralCode, usernameToReferralCode } from "@/lib/referrals/code";
 import type {
   LeaderboardEntry,
   LocalUser,
@@ -116,7 +116,15 @@ function createReferralLink(origin: string, code: string): string {
   return `${normalizeOrigin(origin)}/r/${encodeURIComponent(code)}`;
 }
 
-async function createUniqueReferralCode(findUser: (code: string) => Promise<LocalUser | null>): Promise<string> {
+async function createUniqueReferralCode(
+  findUser: (code: string) => Promise<LocalUser | null>,
+  preferredUsername?: string | null,
+): Promise<string> {
+  if (preferredUsername) {
+    const usernameCode = usernameToReferralCode(preferredUsername);
+    if (usernameCode && !(await findUser(usernameCode))) return usernameCode;
+  }
+
   for (let attempt = 0; attempt < 8; attempt += 1) {
     const code = createReferralCode();
     if (!(await findUser(code))) return code;
@@ -169,7 +177,7 @@ class SupabaseAdapter implements DbAdapter {
       return { user: toLocalUser(data as UserRow), isNew: false };
     }
 
-    const referralCode = await createUniqueReferralCode((code) => this.getUserByReferralCode(code));
+    const referralCode = await createUniqueReferralCode((code) => this.getUserByReferralCode(code), profile.twitterUsername);
     const { data, error } = await this.client
       .from("waitlist_users")
       .insert({
@@ -381,7 +389,7 @@ class SqliteAdapter implements DbAdapter {
       return { user: (await this.getUserByPrivyId(profile.privyUserId)) ?? existing, isNew: false };
     }
 
-    const referralCode = await createUniqueReferralCode((code) => this.getUserByReferralCode(code));
+    const referralCode = await createUniqueReferralCode((code) => this.getUserByReferralCode(code), profile.twitterUsername);
     const id = randomUUID();
 
     this.db
