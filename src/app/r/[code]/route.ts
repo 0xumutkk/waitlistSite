@@ -42,8 +42,8 @@ function createPreviewHtml(input: {
   <meta property="og:image" content="${input.imageUrl}" />
   <meta property="og:image:secure_url" content="${input.imageUrl}" />
   <meta property="og:image:type" content="image/png" />
-  <meta property="og:image:width" content="1200" />
-  <meta property="og:image:height" content="675" />
+  <meta property="og:image:width" content="1196" />
+  <meta property="og:image:height" content="672" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:site" content="@useperminal" />
   <meta name="twitter:title" content="${input.title}" />
@@ -74,7 +74,10 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return response;
   }
 
-  if (isSocialPreviewBot(request.headers.get("user-agent"))) {
+  if (
+    request.nextUrl.searchParams.get("card") === "waitlist" ||
+    isSocialPreviewBot(request.headers.get("user-agent"))
+  ) {
     const appUrl = request.nextUrl.origin.replace(/\/$/, "");
     const pageUrl = `${appUrl}${request.nextUrl.pathname}${request.nextUrl.search}`;
     const imageParams = new URLSearchParams({

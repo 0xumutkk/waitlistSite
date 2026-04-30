@@ -290,7 +290,7 @@ export function JoinedWaitlist({
   const containerRef = useRef<HTMLDivElement>(null);
   const shareUrl = referralLink ?? `https://perminal.com/${username.replace("@", "")}`;
   const canonicalShareUrl = normalizeShareUrlForX(shareUrl);
-  const xShareUrl = `${canonicalShareUrl}${canonicalShareUrl.includes("?") ? "&" : "?"}card=waitlist`;
+  const xShareUrl = `${canonicalShareUrl}${canonicalShareUrl.includes("?") ? "&" : "?"}card=waitlist4`;
   const shareText = "I joined the Perminal waitlist. Use my invite link:";
   const fileName = `perminal-waitlist-${username.replace("@", "")}.png`;
 
