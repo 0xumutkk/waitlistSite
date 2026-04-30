@@ -1,62 +1,34 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Providers } from "./providers";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const geist = Geist({
+  variable: "--font-geist",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-/**
- * ITC Garamond Std — Narrow family, the exact display face from the Figma design.
- * We map CSS weights to the Narrow cuts so `font-weight: 300/400/700` all stay
- * within the Narrow width: 300 → Light, 400 → Book, 700 → Bold.
- */
-const itcGaramond = localFont({
-  variable: "--font-display",
-  display: "swap",
-  src: [
-    { path: "../../public/fonts/ITCGaramondStd-LtNarrow.ttf", weight: "300", style: "normal" },
-    { path: "../../public/fonts/ITCGaramondStd-LtNarrowIta.ttf", weight: "300", style: "italic" },
-    { path: "../../public/fonts/ITCGaramondStd-BkNarrow.ttf", weight: "400", style: "normal" },
-    { path: "../../public/fonts/ITCGaramondStd-BkNarrowIta.ttf", weight: "400", style: "italic" },
-    { path: "../../public/fonts/ITCGaramondStd-BdNarrow.ttf", weight: "700", style: "normal" },
-    { path: "../../public/fonts/ITCGaramondStd-BdNarrowIta.ttf", weight: "700", style: "italic" },
-  ],
+const garamond = localFont({
+  src: "../../public/fonts/ITC Garamond Std Light Narrow.otf",
+  variable: "--font-garamond",
 });
 
 export const metadata: Metadata = {
-  icons: { icon: "/favicon.ico" },
-  title: "Perminal — Trade What Happens. Together.",
+  title: "Perminal - Trade What Happens. Together.",
   description:
-    "Perminal is the social prediction market. Trade politics, crypto, and world events. Follow top predictors, copy their trades, and earn when people follow you.",
-  openGraph: {
-    title: "Perminal — Trade What Happens. Together.",
-    description:
-      "The social prediction market. Trade politics, crypto, and world events — together.",
-    type: "website",
-    images: [{ url: "data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7", width: 1, height: 1 }],
-  },
+    "The social prediction market on Hyperliquid. Follow the best, copy in one tap, get paid on every call.",
 };
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${itcGaramond.variable} h-full antialiased`}
-    >
-      <body className="min-h-full bg-[var(--page-bg)] text-[var(--ink)]">
+    <html lang="en" className={`${geist.variable} ${garamond.variable}`}>
+      <body>
         <Providers>{children}</Providers>
       </body>
     </html>

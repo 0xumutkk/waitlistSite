@@ -43,7 +43,24 @@ export function Providers({ children }: { children: React.ReactNode }) {
           accentColor: "#36bf5a",
           landingHeader: "Join Perminal",
           loginMessage: "Connect X to claim your invite link.",
+          showWalletLoginFirst: false,
           theme: "light",
+          walletList: [],
+        },
+        embeddedWallets: {
+          ethereum: {
+            createOnLogin: "off",
+          },
+          solana: {
+            createOnLogin: "off",
+          },
+          showWalletUIs: false,
+        },
+        externalWallets: {
+          disableAllExternalWallets: true,
+          walletConnect: {
+            enabled: false,
+          },
         },
       }}
     >

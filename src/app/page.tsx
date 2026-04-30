@@ -1,23 +1,39 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import Image from "next/image";
-import { Header } from "@/components/Header";
-import { Hero } from "@/components/Hero";
-import { FeatureSection } from "@/components/FeatureSection";
-import { Leaderboard } from "@/components/Leaderboard";
-import type { LeaderboardEntry, MeResponse } from "@/lib/referrals/types";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { LiquidGlassDefs } from "./components/LiquidGlassDefs";
+import { Header } from "./components/Header";
+import { Leaderboard } from "./components/Leaderboard";
+import { Hero } from "./components/Hero";
+import { FeatureCards } from "./components/FeatureCards";
+import { HyperliquidLogo } from "./components/icons/HyperliquidLogo";
+import { FEATURE_CARDS } from "@/lib/data";
+import type {
+  CurrentUser,
+  LeaderboardEntry as UiLeaderboardEntry,
+} from "@/lib/types";
+import type {
+  LeaderboardEntry as ApiLeaderboardEntry,
+  MeResponse,
+} from "@/lib/referrals/types";
 import { usePerminalAuth } from "./providers";
 
 const PENDING_WAITLIST_JOIN_KEY = "perminal:pending-waitlist-join";
 
-export default function Home() {
+function avatarSrc(src?: string | null) {
+  if (!src) return "/avatar.png";
+  if (src.startsWith("http://") || src.startsWith("https://")) {
+    return `/api/avatar?url=${encodeURIComponent(src)}`;
+  }
+  return src;
+}
+
+export default function Page() {
   const [didRequestJoin, setDidRequestJoin] = useState(false);
   const [me, setMe] = useState<MeResponse | null>(null);
-  const [entries, setEntries] = useState<LeaderboardEntry[]>([]);
-  const [isLeaderboardLoading, setIsLeaderboardLoading] = useState(true);
+  const [entries, setEntries] = useState<ApiLeaderboardEntry[]>([]);
+  const syncInFlightRef = useRef<Promise<MeResponse | null> | null>(null);
   const { authenticated, getAccessToken, login, logout, ready } = usePerminalAuth();
-  const referralLink = me?.referralLink;
 
   const authHeaders = useCallback(async (): Promise<HeadersInit> => {
     if (!authenticated) return {};
@@ -27,43 +43,56 @@ export default function Home() {
   }, [authenticated, getAccessToken]);
 
   const refreshLeaderboard = useCallback(async () => {
-    setIsLeaderboardLoading(true);
+    const response = await fetch("/api/leaderboard?limit=10", {
+      headers: await authHeaders(),
+    });
 
-    try {
-      const response = await fetch("/api/leaderboard?limit=10", {
-        headers: await authHeaders(),
-      });
+    if (!response.ok) return;
 
-      if (response.ok) {
-        const data = (await response.json()) as { entries: LeaderboardEntry[] };
-        setEntries(data.entries);
-      }
-    } finally {
-      setIsLeaderboardLoading(false);
-    }
+    const data = (await response.json()) as { entries: ApiLeaderboardEntry[] };
+    setEntries(data.entries);
   }, [authHeaders]);
 
   const syncUser = useCallback(async () => {
-    const response = await fetch("/api/auth/sync", {
-      method: "POST",
-      headers: {
-        ...(await authHeaders()),
-        "Content-Type": "application/json",
-      },
-    });
+    if (syncInFlightRef.current) return syncInFlightRef.current;
 
-    if (!response.ok) {
-      throw new Error("Failed to sync Privy user");
+    const syncTask = (async () => {
+      const response = await fetch("/api/auth/sync", {
+        method: "POST",
+        headers: {
+          ...(await authHeaders()),
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (response.status === 429) {
+        await refreshLeaderboard();
+        return null;
+      }
+
+      if (!response.ok) {
+        throw new Error("Failed to sync Privy user");
+      }
+
+      const synced = (await response.json()) as MeResponse;
+      setMe(synced);
+      await refreshLeaderboard();
+      return synced;
+    })();
+
+    syncInFlightRef.current = syncTask;
+
+    try {
+      return await syncTask;
+    } finally {
+      syncInFlightRef.current = null;
     }
-
-    const synced = (await response.json()) as MeResponse;
-    setMe(synced);
-    await refreshLeaderboard();
-    return synced;
   }, [authHeaders, refreshLeaderboard]);
 
   useEffect(() => {
-    queueMicrotask(() => void refreshLeaderboard());
+    queueMicrotask(() => {
+      void refreshLeaderboard();
+    });
   }, [refreshLeaderboard]);
 
   useEffect(() => {
@@ -82,8 +111,7 @@ export default function Home() {
     queueMicrotask(() => {
       const hasPendingJoin =
         didRequestJoin ||
-        (typeof window !== "undefined" &&
-          window.sessionStorage.getItem(PENDING_WAITLIST_JOIN_KEY) === "1");
+        window.sessionStorage.getItem(PENDING_WAITLIST_JOIN_KEY) === "1";
 
       void syncUser()
         .then(() => {
@@ -98,20 +126,17 @@ export default function Home() {
     });
   }, [authenticated, didRequestJoin, ready, syncUser]);
 
-  const copyReferral = useCallback(() => {
-    if (!referralLink) return;
-    void navigator.clipboard.writeText(referralLink);
-  }, [referralLink]);
-
   const handleJoin = useCallback(() => {
     setDidRequestJoin(true);
     window.sessionStorage.setItem(PENDING_WAITLIST_JOIN_KEY, "1");
 
     if (authenticated) {
-      void syncUser().then(() => {
-        window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
-        setDidRequestJoin(false);
-      });
+      void syncUser()
+        .catch(() => null)
+        .finally(() => {
+          window.sessionStorage.removeItem(PENDING_WAITLIST_JOIN_KEY);
+          setDidRequestJoin(false);
+        });
       return;
     }
 
@@ -127,90 +152,92 @@ export default function Home() {
     });
   }, [logout, refreshLeaderboard]);
 
-  const modalUsername = useMemo(() => {
-    if (!me) return undefined;
-    return me.user.twitterUsername ? `@${me.user.twitterUsername}` : me.user.displayName;
+  const uiEntries: UiLeaderboardEntry[] = useMemo(
+    () =>
+      entries.map((entry) => ({
+          rank: entry.rank,
+          username: entry.username,
+          avatarUrl: avatarSrc(entry.avatarUrl),
+          invites: entry.invites,
+          isUser: entry.isUser,
+        })),
+    [entries],
+  );
+
+  const currentUser: CurrentUser | null = useMemo(() => {
+    if (!me) return null;
+
+    return {
+      rank: me.rank,
+      username: me.user.twitterUsername
+        ? `@${me.user.twitterUsername}`
+        : me.user.displayName,
+      avatarUrl: avatarSrc(me.user.avatarUrl),
+      invites: me.invites,
+      referralUrl: me.referralLink,
+    };
+  }, [me]);
+
+  const heroUser = useMemo(() => {
+    if (!me) return null;
+
+    return {
+      position: me.rank,
+      username: me.user.twitterUsername
+        ? `@${me.user.twitterUsername}`
+        : me.user.displayName,
+      avatarUrl: avatarSrc(me.user.avatarUrl),
+      referralLink: me.referralLink,
+    };
   }, [me]);
 
   return (
-    <main className="relative min-h-screen w-full flex flex-col overflow-x-hidden bg-[#8FAAD9] px-2 md:px-4">
-      <div aria-hidden="true" className="fixed inset-0 z-0 pointer-events-none">
-        <Image
-          src="/thumbnail_bg.png"
+    <>
+      <LiquidGlassDefs />
+
+      <div aria-hidden className="fixed inset-0 -z-10 overflow-hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src="/bg.png"
           alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover"
+          className="absolute inset-0 h-full w-full object-cover"
         />
       </div>
 
-      <div className="relative z-10 mx-auto flex w-full max-w-[377px] flex-col gap-[16px] py-[16px] md:max-w-[1264px] md:gap-[17px] md:py-[45px]">
-        <div
-          className="flex h-[68px] w-full flex-col justify-center overflow-hidden rounded-[12px] border border-black/10 bg-white/60 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px]"
-          data-node-id="260:4410"
-          data-name="Wallet"
-        >
-          <Header />
-        </div>
+      <main className="mx-auto flex min-h-[calc(100dvh-2rem)] w-[1258px] max-w-[calc(100%-32px)] flex-col gap-2 py-4 pb-12 lg:justify-center lg:pb-4">
+        <Header />
 
-        <div className="flex flex-col gap-[16px] md:hidden">
-          <Hero 
-            isJoined={authenticated} 
-            onJoin={handleJoin} 
-            variant="mobile"
-            username={modalUsername}
-            avatarUrl={me?.user.avatarUrl}
-            rank={me ? `#${me.rank.toLocaleString()}` : undefined}
-            referralLink={referralLink}
-            onCopyReferral={copyReferral}
-            onLogout={handleLogout}
-          />
-
-          <div className="h-[417.595px] w-full">
-            <FeatureSection />
-          </div>
-
-          <Leaderboard
-            entries={entries}
-            isLoading={isLeaderboardLoading}
-            referralLink={referralLink}
-            onCopyReferral={copyReferral}
-          />
-        </div>
-
-        <div
-          className="hidden h-[849px] w-full flex-col overflow-hidden rounded-[12px] border border-black/10 bg-white/25 p-4 shadow-[0_24px_64px_rgba(0,0,0,0.1)] backdrop-blur-[24px] md:flex"
-          data-node-id="260:4428"
-          data-name="Wallet"
-        >
-          <div className="flex h-[817px] w-full gap-[16px] overflow-hidden">
-            <Leaderboard
-              entries={entries}
-              isLoading={isLeaderboardLoading}
-              referralLink={referralLink}
-              onCopyReferral={copyReferral}
-            />
-
-            <div className="flex h-full flex-1 flex-col gap-[16px] overflow-hidden">
-              <Hero 
-                isJoined={authenticated} 
+        <section className="glass p-2">
+          <div className="hidden h-[817px] items-stretch gap-2 lg:flex">
+            <Leaderboard entries={uiEntries} currentUser={currentUser} />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <Hero
+                joined={authenticated ? heroUser : null}
                 onJoin={handleJoin}
-                username={modalUsername}
-                avatarUrl={me?.user.avatarUrl}
-                rank={me ? `#${me.rank.toLocaleString()}` : undefined}
-                referralLink={referralLink}
-                onCopyReferral={copyReferral}
                 onLogout={handleLogout}
               />
-
-              <div className="min-h-0 flex-1">
-                <FeatureSection />
-              </div>
+              <FeatureCards cards={FEATURE_CARDS} />
             </div>
           </div>
+
+          <div className="flex flex-col gap-2 lg:hidden">
+            <Hero
+              joined={authenticated ? heroUser : null}
+              onJoin={handleJoin}
+              onLogout={handleLogout}
+            />
+            <FeatureCards cards={FEATURE_CARDS} />
+            <Leaderboard entries={uiEntries} currentUser={currentUser} />
+          </div>
+        </section>
+
+        <div className="flex items-center justify-center gap-1.5 pt-2">
+          <span className="relative -translate-y-0.5 font-serif text-2xl font-normal tracking-[-0.48px] text-black [-webkit-text-stroke:0.4px_black]">
+            Built on
+          </span>
+          <HyperliquidLogo className="h-[21px] w-[134px]" />
         </div>
-      </div>
-    </main>
+      </main>
+    </>
   );
 }
