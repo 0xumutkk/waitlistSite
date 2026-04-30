@@ -19,6 +19,19 @@ export const metadata: Metadata = {
   title: "Perminal - Trade What Happens. Together.",
   description:
     "The social prediction market on Hyperliquid. Follow the best, copy in one tap, get paid on every call.",
+  twitter: {
+    card: "summary_large_image",
+    site: "@useperminal",
+    title: "Perminal - Trade What Happens. Together.",
+    description:
+      "The social prediction market on Hyperliquid. Follow the best, copy in one tap, get paid on every call.",
+  },
+  openGraph: {
+    type: "website",
+    title: "Perminal - Trade What Happens. Together.",
+    description:
+      "The social prediction market on Hyperliquid. Follow the best, copy in one tap, get paid on every call.",
+  },
 };
 
 export default function RootLayout({

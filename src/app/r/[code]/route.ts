@@ -28,7 +28,14 @@ function createPreviewHtml(input: {
   description: string;
   imageUrl: string;
   pageUrl: string;
+  redirectUrl?: string;
 }) {
+  const redirectHead = input.redirectUrl
+    ? `<meta http-equiv="refresh" content="0; url=${input.redirectUrl}" />`
+    : "";
+  const redirectScript = input.redirectUrl
+    ? `<script>window.location.replace(${JSON.stringify(input.redirectUrl)});</script>`
+    : "";
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -50,8 +57,10 @@ function createPreviewHtml(input: {
   <meta name="twitter:description" content="${input.description}" />
   <meta name="twitter:image" content="${input.imageUrl}" />
   <meta name="twitter:image:alt" content="Perminal joined waitlist card" />
+  ${redirectHead}
 </head>
 <body>
+  ${redirectScript}
   <a href="/r/${encodeURIComponent(input.code)}">${input.title}</a>
 </body>
 </html>`;
@@ -75,29 +84,57 @@ export async function GET(request: NextRequest, context: RouteContext) {
   }
 
   const cardParam = request.nextUrl.searchParams.get("card");
-  const shouldShowPreview = isSocialPreviewBot(request.headers.get("user-agent"));
+  const isBot = isSocialPreviewBot(request.headers.get("user-agent"));
 
-  if (shouldShowPreview) {
+  // Serve OG HTML when card param is present (for both bots and humans)
+  // or when the request looks like a social preview bot.
+  if (cardParam || isBot) {
     const appUrl = request.nextUrl.origin.replace(/\/$/, "");
     const pageUrl = `${appUrl}${request.nextUrl.pathname}${request.nextUrl.search}`;
     const imageVersion = cardParam?.startsWith("waitlist") ? cardParam : "waitlist6";
     const imageUrl = `${appUrl}/api/og/waitlist/${encodeURIComponent(referralCode)}/${encodeURIComponent(imageVersion)}.png`;
 
-    return new NextResponse(
+    if (!isBot) {
+      const clientIp = getClientIp(request.headers);
+      const rl = await rateLimiter.referralVisit(clientIp, referralCode);
+      if (rl.success) {
+        await db.recordReferralVisit({
+          referralCode,
+          visitorFingerprintHash: hashAbuseSignal(request.cookies.get("perminal_visitor")?.value ?? null),
+          ipHash: hashAbuseSignal(clientIp),
+          userAgentHash: hashAbuseSignal(request.headers.get("user-agent")),
+        });
+      }
+    }
+
+    const htmlResponse = new NextResponse(
       createPreviewHtml({
         code: referralCode,
         title: "Perminal - Joined Waitlist",
         description: "I joined the Perminal waitlist. Use my invite link.",
         imageUrl,
         pageUrl,
+        redirectUrl: !isBot ? `${appUrl}/` : undefined,
       }),
       {
         headers: {
-          "Cache-Control": "public, max-age=300",
+          "Cache-Control": isBot ? "public, max-age=300" : "no-store",
           "Content-Type": "text/html; charset=utf-8",
         },
       },
     );
+
+    if (!isBot) {
+      htmlResponse.cookies.set(REFERRAL_COOKIE_NAME, createReferralCookieValue(referralCode), {
+        httpOnly: true,
+        sameSite: "lax",
+        secure: process.env.NODE_ENV === "production",
+        maxAge: REFERRAL_COOKIE_MAX_AGE,
+        path: "/",
+      });
+    }
+
+    return htmlResponse;
   }
 
   const clientIp = getClientIp(request.headers);
