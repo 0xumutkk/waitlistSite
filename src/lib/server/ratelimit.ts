@@ -57,6 +57,8 @@ export const rateLimiter = {
   leaderboard: (ip: string) => check(`leaderboard:${ip}`, { limit: 30, windowSeconds: 60 }),
   // Me endpoint: 20 requests per minute per user
   me: (userId: string) => check(`me:${userId}`, { limit: 20, windowSeconds: 60 }),
+  // Referral visits: cap write amplification per IP/referral pair.
+  referralVisit: (ip: string, code: string) => check(`referral_visit:${ip}:${code}`, { limit: 10, windowSeconds: 60 }),
 };
 
 // IP-based gate before token verification — prevents bots from reaching Privy auth

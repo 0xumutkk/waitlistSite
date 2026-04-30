@@ -1,6 +1,6 @@
 import Database from "better-sqlite3";
 import { createClient } from "@supabase/supabase-js";
-import { mkdirSync } from "node:fs";
+import { chmodSync, mkdirSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 
 const supabaseUrl = process.env.SUPABASE_URL;
@@ -50,5 +50,7 @@ const transaction = db.transaction((rows) => {
 transaction(data ?? []);
 db.close();
 
-console.log(`SQLite leaderboard backup written to ${outputPath}`);
+chmodSync(dirname(outputPath), 0o700);
+chmodSync(outputPath, 0o600);
 
+console.log(`SQLite leaderboard backup written to ${outputPath}`);

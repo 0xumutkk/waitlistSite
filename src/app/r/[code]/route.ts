@@ -7,12 +7,55 @@ import {
 } from "@/lib/referrals/cookie";
 import { hashAbuseSignal } from "@/lib/referrals/hash";
 import { getDb } from "@/lib/server/db";
+import { getClientIp, rateLimiter } from "@/lib/server/ratelimit";
 
 export const runtime = "nodejs";
 
 type RouteContext = {
   params: Promise<{ code: string }>;
 };
+
+function isSocialPreviewBot(userAgent: string | null) {
+  if (!userAgent) return false;
+  return /twitterbot|facebookexternalhit|slackbot|discordbot|linkedinbot|telegrambot|whatsapp|pinterest/i.test(
+    userAgent,
+  );
+}
+
+function createPreviewHtml(input: {
+  code: string;
+  title: string;
+  description: string;
+  imageUrl: string;
+  pageUrl: string;
+}) {
+  return `<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>${input.title}</title>
+  <meta name="description" content="${input.description}" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="${input.title}" />
+  <meta property="og:description" content="${input.description}" />
+  <meta property="og:url" content="${input.pageUrl}" />
+  <meta property="og:image" content="${input.imageUrl}" />
+  <meta property="og:image:secure_url" content="${input.imageUrl}" />
+  <meta property="og:image:type" content="image/png" />
+  <meta property="og:image:width" content="1200" />
+  <meta property="og:image:height" content="675" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:site" content="@useperminal" />
+  <meta name="twitter:title" content="${input.title}" />
+  <meta name="twitter:description" content="${input.description}" />
+  <meta name="twitter:image" content="${input.imageUrl}" />
+  <meta name="twitter:image:alt" content="Perminal joined waitlist card" />
+</head>
+<body>
+  <a href="/r/${encodeURIComponent(input.code)}">${input.title}</a>
+</body>
+</html>`;
+}
 
 export async function GET(request: NextRequest, context: RouteContext) {
   const { code } = await context.params;
@@ -31,12 +74,42 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return response;
   }
 
-  await db.recordReferralVisit({
-    referralCode,
-    visitorFingerprintHash: hashAbuseSignal(request.cookies.get("perminal_visitor")?.value ?? null),
-    ipHash: hashAbuseSignal(request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ?? null),
-    userAgentHash: hashAbuseSignal(request.headers.get("user-agent")),
-  });
+  if (isSocialPreviewBot(request.headers.get("user-agent"))) {
+    const appUrl = request.nextUrl.origin.replace(/\/$/, "");
+    const pageUrl = `${appUrl}${request.nextUrl.pathname}${request.nextUrl.search}`;
+    const imageParams = new URLSearchParams({
+      code: referralCode,
+      v: request.nextUrl.searchParams.get("card") ?? "waitlist",
+    });
+    const imageUrl = `${appUrl}/api/og/waitlist?${imageParams.toString()}`;
+
+    return new NextResponse(
+      createPreviewHtml({
+        code: referralCode,
+        title: "Perminal - Joined Waitlist",
+        description: "I joined the Perminal waitlist. Use my invite link.",
+        imageUrl,
+        pageUrl,
+      }),
+      {
+        headers: {
+          "Cache-Control": "public, max-age=300",
+          "Content-Type": "text/html; charset=utf-8",
+        },
+      },
+    );
+  }
+
+  const clientIp = getClientIp(request.headers);
+  const rl = await rateLimiter.referralVisit(clientIp, referralCode);
+  if (rl.success) {
+    await db.recordReferralVisit({
+      referralCode,
+      visitorFingerprintHash: hashAbuseSignal(request.cookies.get("perminal_visitor")?.value ?? null),
+      ipHash: hashAbuseSignal(clientIp),
+      userAgentHash: hashAbuseSignal(request.headers.get("user-agent")),
+    });
+  }
 
   response.cookies.set(REFERRAL_COOKIE_NAME, createReferralCookieValue(referralCode), {
     httpOnly: true,

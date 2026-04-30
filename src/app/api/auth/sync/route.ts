@@ -54,7 +54,7 @@ export async function POST() {
       await db.createVerifiedReferral({
         referrerUserId: referrer.id,
         referredUserId: user.id,
-        referralCode,
+        referralCode: referrer.referralCode,
       });
     }
 

@@ -1,4 +1,4 @@
-import { mkdirSync } from "node:fs";
+import { chmodSync, mkdirSync } from "node:fs";
 import { randomUUID } from "node:crypto";
 import { dirname, resolve } from "node:path";
 
@@ -57,6 +57,10 @@ export function getDb(): DbAdapter {
 
   const databaseUrl = getOptionalEnv("DATABASE_URL");
   if (databaseUrl?.startsWith("sqlite:") || databaseUrl?.startsWith("file:")) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SQLite DATABASE_URL is not allowed in production. Use Supabase as the writer.");
+    }
+
     adapter = new SqliteAdapter(databaseUrl);
     return adapter;
   }
@@ -151,7 +155,23 @@ class SupabaseAdapter implements DbAdapter {
   async getUserByReferralCode(referralCode: string): Promise<LocalUser | null> {
     const { data, error } = await this.client.from("waitlist_users").select("*").eq("referral_code", referralCode).maybeSingle();
     if (error) throw error;
-    return data ? toLocalUser(data as UserRow) : null;
+    if (data) return toLocalUser(data as UserRow);
+
+    const { data: aliasData, error: aliasError } = await this.client
+      .from("waitlist_referral_code_aliases")
+      .select("user_id")
+      .eq("alias_code", referralCode)
+      .maybeSingle();
+    if (aliasError) throw aliasError;
+    if (!aliasData) return null;
+
+    const { data: userData, error: userError } = await this.client
+      .from("waitlist_users")
+      .select("*")
+      .eq("id", aliasData.user_id)
+      .single();
+    if (userError) throw userError;
+    return toLocalUser(userData as UserRow);
   }
 
   async upsertUser(profile: PrivyProfile): Promise<{ user: LocalUser; isNew: boolean }> {
@@ -344,6 +364,15 @@ function readSqliteLeaderboardBackup(limit: number, currentUserId?: string | nul
   }
 }
 
+function hardenSqlitePath(filePath: string): void {
+  try {
+    chmodSync(dirname(filePath), 0o700);
+    chmodSync(filePath, 0o600);
+  } catch {
+    // Best-effort local hardening; database access should not fail solely due to chmod support.
+  }
+}
+
 class SqliteAdapter implements DbAdapter {
   private db: Database.Database;
 
@@ -351,6 +380,7 @@ class SqliteAdapter implements DbAdapter {
     const filePath = this.getFilePath(databaseUrl);
     mkdirSync(dirname(filePath), { recursive: true });
     this.db = new Database(filePath);
+    hardenSqlitePath(filePath);
     this.db.pragma("foreign_keys = ON");
     this.ensureSchema();
   }
@@ -362,7 +392,15 @@ class SqliteAdapter implements DbAdapter {
 
   async getUserByReferralCode(referralCode: string): Promise<LocalUser | null> {
     const row = this.db.prepare("select * from waitlist_users where referral_code = ?").get(referralCode) as UserRow | undefined;
-    return row ? toLocalUser(row) : null;
+    if (row) return toLocalUser(row);
+
+    const alias = this.db
+      .prepare("select user_id from waitlist_referral_code_aliases where alias_code = ?")
+      .get(referralCode) as { user_id: string } | undefined;
+    if (!alias) return null;
+
+    const aliasRow = this.db.prepare("select * from waitlist_users where id = ?").get(alias.user_id) as UserRow | undefined;
+    return aliasRow ? toLocalUser(aliasRow) : null;
   }
 
   async upsertUser(profile: PrivyProfile): Promise<{ user: LocalUser; isNew: boolean }> {
@@ -553,6 +591,13 @@ class SqliteAdapter implements DbAdapter {
         ip_hash text,
         user_agent_hash text,
         created_at text not null default current_timestamp
+      );
+
+      create table if not exists waitlist_referral_code_aliases (
+        alias_code text primary key,
+        user_id text not null references waitlist_users(id) on delete cascade,
+        created_at text not null default current_timestamp,
+        check (length(alias_code) >= 3)
       );
 
       create table if not exists waitlist_referrals (
