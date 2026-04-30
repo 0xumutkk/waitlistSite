@@ -8,7 +8,7 @@ const contentSecurityPolicy = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https:",
   "font-src 'self' data:",
-  "connect-src 'self' https://auth.privy.io https://api.privy.io https://*.privy.io https://*.privy.systems https://explorer-api.walletconnect.com https://*.walletconnect.com wss://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://*.supabase.co https://api.x.com https://api.twitter.com",
+  "connect-src 'self' https://auth.privy.io https://api.privy.io https://*.privy.io https://*.privy.systems https://explorer-api.walletconnect.com https://*.walletconnect.com wss://*.walletconnect.com https://*.walletconnect.org wss://*.walletconnect.org https://*.supabase.co https://api.x.com https://api.twitter.com https://pbs.twimg.com https://*.twimg.com",
   "frame-src 'self' https://auth.privy.io https://*.privy.io https://twitter.com https://x.com https://*.twitter.com https://*.x.com",
   "child-src 'self' https://auth.privy.io https://*.privy.io",
   "worker-src 'self' blob:",
@@ -41,4 +41,3 @@ const nextConfig: NextConfig = {
 };
 
 export default nextConfig;
-

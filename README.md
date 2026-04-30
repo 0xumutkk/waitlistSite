@@ -52,7 +52,7 @@ npm run backup:sqlite # export leaderboard snapshot from Supabase
 
 ## Backend setup
 
-Create the Supabase schema with `supabase/migrations/005_waitlist_referrals.sql`, then configure:
+Apply all Supabase migrations in `supabase/migrations` in timestamp order, then configure:
 
 ```bash
 NEXT_PUBLIC_PRIVY_APP_ID=
@@ -76,6 +76,10 @@ production, omit SQLite as the writer and use Supabase. The app intentionally fa
 production if Supabase service credentials are missing, because a serverless SQLite fallback can
 mint different referral links for the same Privy user across instances. `SQLITE_BACKUP_PATH` is only
 read when the public leaderboard needs a snapshot fallback after Supabase is already configured.
+Do not expose `SUPABASE_SERVICE_ROLE_KEY` through any `NEXT_PUBLIC_` or client-side environment
+variable.
+SQLite files under `.data/` are local-only development/backup artifacts. Keep `.data/` ignored,
+owner-readable only, and never set `DATABASE_URL=sqlite:*` in production.
 
 Waitlist data intentionally uses prefixed tables so it can live in the same Supabase project as
 the mobile app without colliding with app-owned tables:
