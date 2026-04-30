@@ -74,17 +74,14 @@ export async function GET(request: NextRequest, context: RouteContext) {
     return response;
   }
 
-  if (
-    request.nextUrl.searchParams.get("card") === "waitlist" ||
-    isSocialPreviewBot(request.headers.get("user-agent"))
-  ) {
+  const cardParam = request.nextUrl.searchParams.get("card");
+  const shouldShowPreview = isSocialPreviewBot(request.headers.get("user-agent"));
+
+  if (shouldShowPreview) {
     const appUrl = request.nextUrl.origin.replace(/\/$/, "");
     const pageUrl = `${appUrl}${request.nextUrl.pathname}${request.nextUrl.search}`;
-    const imageParams = new URLSearchParams({
-      code: referralCode,
-      v: request.nextUrl.searchParams.get("card") ?? "waitlist",
-    });
-    const imageUrl = `${appUrl}/api/og/waitlist?${imageParams.toString()}`;
+    const imageVersion = cardParam?.startsWith("waitlist") ? cardParam : "waitlist6";
+    const imageUrl = `${appUrl}/api/og/waitlist/${encodeURIComponent(referralCode)}/${encodeURIComponent(imageVersion)}.png`;
 
     return new NextResponse(
       createPreviewHtml({

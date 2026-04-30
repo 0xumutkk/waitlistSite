@@ -1,3 +1,5 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import { ImageResponse } from "next/og";
 import { NextRequest } from "next/server";
 
@@ -29,6 +31,13 @@ export async function GET(request: NextRequest) {
   const avatarUrl = user?.avatarUrl
     ? absoluteUrl(`/api/avatar?url=${encodeURIComponent(user.avatarUrl)}`, origin)
     : absoluteUrl("/avatar.png", origin);
+  const wordmarkUrl = absoluteUrl("/perminal-wordmark.svg", origin);
+  const garamond = await readFile(
+    join(process.cwd(), "public", "fonts", "ITC Garamond Std Light Narrow.otf"),
+  );
+  const geist = await readFile(
+    join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf"),
+  );
 
   return new ImageResponse(
     (
@@ -42,31 +51,29 @@ export async function GET(request: NextRequest) {
             width: CARD_WIDTH,
           }}
         >
-          <div
+          <img
+            alt="Perminal"
+            src={wordmarkUrl}
             style={{
-              color: "#000000",
-              fontFamily: "Inter, Arial, sans-serif",
-              fontSize: 60,
-              fontWeight: 700,
+              height: 68,
               left: 44,
-              lineHeight: 1,
+              objectFit: "contain",
               position: "absolute",
-              top: 24,
+              top: 36,
+              width: 356,
             }}
-          >
-            Perminal
-          </div>
+          />
 
           <div
             style={{
               background:
                 "linear-gradient(90deg, rgb(255, 180, 40) 0%, rgb(255, 214, 0) 4%, rgb(255, 138, 0) 22%, rgb(255, 0, 128) 40%, rgb(128, 72, 192) 47.5%, rgb(0, 144, 255) 55%, rgb(0, 255, 139) 72%, rgb(255, 77, 158) 90%, rgb(255, 214, 0) 100%)",
               filter: "blur(2px)",
-              height: 22.8,
-              left: 372,
+              height: 11.62,
+              left: 403,
               position: "absolute",
-              top: 73.6,
-              width: 98.4,
+              top: 95,
+              width: 48.13,
             }}
           />
 
@@ -74,19 +81,20 @@ export async function GET(request: NextRequest) {
             style={{
               background:
                 "linear-gradient(90deg, rgb(255, 180, 40) 0%, rgb(255, 214, 0) 4%, rgb(255, 138, 0) 22%, rgb(255, 0, 128) 40%, rgb(128, 72, 192) 47.5%, rgb(0, 144, 255) 55%, rgb(0, 255, 139) 72%, rgb(255, 77, 158) 90%, rgb(255, 214, 0) 100%)",
-              height: 22.8,
-              left: 372,
+              height: 11.62,
+              left: 403,
               position: "absolute",
-              top: 73.6,
-              width: 98.4,
+              top: 95,
+              width: 48.13,
             }}
           />
 
           <div
             style={{
               color: "#000000",
-              fontFamily: "Georgia, serif",
+              fontFamily: "ITC Garamond",
               fontSize: 116,
+              fontWeight: 400,
               letterSpacing: -1.74,
               lineHeight: 0.84,
               position: "absolute",
@@ -133,7 +141,7 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   color: "rgba(0,0,0,0.8)",
-                  fontFamily: "Inter, Arial, sans-serif",
+                  fontFamily: "Geist",
                   fontSize: 58,
                   fontWeight: 600,
                 }}
@@ -156,7 +164,7 @@ export async function GET(request: NextRequest) {
               <div
                 style={{
                   color: "rgba(0,0,0,0.4)",
-                  fontFamily: "Inter, Arial, sans-serif",
+                  fontFamily: "Geist",
                   fontSize: 48,
                   fontWeight: 500,
                 }}
@@ -168,6 +176,35 @@ export async function GET(request: NextRequest) {
       </div>
     ),
     {
+      fonts: [
+        {
+          data: geist,
+          name: "Geist",
+          style: "normal",
+          weight: 700,
+        },
+        {
+          data: geist,
+          name: "Geist",
+          style: "normal",
+          weight: 600,
+        },
+        {
+          data: geist,
+          name: "Geist",
+          style: "normal",
+          weight: 500,
+        },
+        {
+          data: garamond,
+          name: "ITC Garamond",
+          style: "normal",
+          weight: 400,
+        },
+      ],
+      headers: {
+        "Cache-Control": "public, max-age=31536000, immutable",
+      },
       height: CARD_HEIGHT,
       width: CARD_WIDTH,
     },
