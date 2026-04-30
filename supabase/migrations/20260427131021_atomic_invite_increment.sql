@@ -13,3 +13,8 @@ as $$
     set verified_invites_count = waitlist_leaderboard_stats.verified_invites_count + 1,
         updated_at = now();
 $$;
+
+revoke all on function public.increment_invite_count(uuid) from public;
+revoke all on function public.increment_invite_count(uuid) from anon;
+revoke all on function public.increment_invite_count(uuid) from authenticated;
+grant execute on function public.increment_invite_count(uuid) to service_role;

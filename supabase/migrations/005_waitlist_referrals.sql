@@ -9,7 +9,8 @@ create table if not exists public.waitlist_users (
   avatar_url text,
   referral_code text not null unique,
   created_at timestamptz not null default now(),
-  last_login_at timestamptz not null default now()
+  last_login_at timestamptz not null default now(),
+  unique (id, referral_code)
 );
 
 create table if not exists public.waitlist_referral_visits (
@@ -21,6 +22,13 @@ create table if not exists public.waitlist_referral_visits (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.waitlist_referral_code_aliases (
+  alias_code text primary key,
+  user_id uuid not null references public.waitlist_users(id) on delete cascade,
+  created_at timestamptz not null default now(),
+  check (length(alias_code) >= 3)
+);
+
 create table if not exists public.waitlist_referrals (
   id uuid primary key default gen_random_uuid(),
   referrer_user_id uuid not null references public.waitlist_users(id) on delete cascade,
@@ -28,7 +36,11 @@ create table if not exists public.waitlist_referrals (
   referral_code text not null,
   status text not null default 'verified' check (status = 'verified'),
   created_at timestamptz not null default now(),
-  check (referrer_user_id <> referred_user_id)
+  check (referrer_user_id <> referred_user_id),
+  foreign key (referrer_user_id, referral_code)
+    references public.waitlist_users(id, referral_code)
+    on update cascade
+    on delete cascade
 );
 
 create table if not exists public.waitlist_leaderboard_stats (
@@ -60,6 +72,7 @@ with (security_invoker = on) as
 
 alter table public.waitlist_users enable row level security;
 alter table public.waitlist_referral_visits enable row level security;
+alter table public.waitlist_referral_code_aliases enable row level security;
 alter table public.waitlist_referrals enable row level security;
 alter table public.waitlist_leaderboard_stats enable row level security;
 
@@ -68,6 +81,16 @@ create policy "public waitlist users are readable"
   on public.waitlist_users for select
   to anon, authenticated
   using (true);
+
+revoke all privileges on public.waitlist_users from anon, authenticated;
+grant select (
+  id,
+  twitter_username,
+  display_name,
+  avatar_url,
+  referral_code,
+  created_at
+) on public.waitlist_users to anon, authenticated;
 
 drop policy if exists "public waitlist leaderboard stats are readable" on public.waitlist_leaderboard_stats;
 create policy "public waitlist leaderboard stats are readable"

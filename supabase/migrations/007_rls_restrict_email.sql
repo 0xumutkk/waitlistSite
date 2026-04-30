@@ -21,5 +21,13 @@ create or replace view public.waitlist_users_public
     created_at
   from public.waitlist_users;
 
-revoke select on public.waitlist_users from anon, authenticated;
+revoke all privileges on public.waitlist_users from anon, authenticated;
+grant select (
+  id,
+  twitter_username,
+  display_name,
+  avatar_url,
+  referral_code,
+  created_at
+) on public.waitlist_users to anon, authenticated;
 grant select on public.waitlist_users_public to anon, authenticated;
