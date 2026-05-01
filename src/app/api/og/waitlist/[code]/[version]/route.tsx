@@ -36,12 +36,15 @@ export async function GET(request: NextRequest, context: RouteContext) {
   const avatarUrl = user?.avatarUrl
     ? absoluteUrl(`/api/avatar?url=${encodeURIComponent(user.avatarUrl)}`, origin)
     : absoluteUrl("/avatar.png", origin);
-  const wordmarkUrl = absoluteUrl("/perminal-wordmark.svg", origin);
+  const wordmarkSvgRaw = await readFile(join(process.cwd(), "public", "perminal-wordmark.svg"), "utf-8");
+  const wordmarkSvg = wordmarkSvgRaw.replace(/var\([^)]*,\s*([^)]+)\)/g, "$1");
+  const wordmarkUrl = `data:image/svg+xml;base64,${Buffer.from(wordmarkSvg).toString("base64")}`;
+  const rainbowDashUrl = absoluteUrl("/rainbow-dash.png", origin);
   const garamond = await readFile(
     join(process.cwd(), "public", "fonts", "ITC Garamond Std Light Narrow.otf"),
   );
   const geist = await readFile(
-    join(process.cwd(), "node_modules", "next", "dist", "compiled", "@vercel", "og", "Geist-Regular.ttf"),
+    join(process.cwd(), "public", "fonts", "Geist-Regular.ttf"),
   );
 
   return new ImageResponse(
@@ -69,28 +72,30 @@ export async function GET(request: NextRequest, context: RouteContext) {
           }}
         />
 
-        <div
+        <img
+          alt=""
+          src={rainbowDashUrl}
           style={{
-            background:
-              "linear-gradient(90deg, rgb(255, 180, 40) 0%, rgb(255, 214, 0) 4%, rgb(255, 138, 0) 22%, rgb(255, 0, 128) 40%, rgb(128, 72, 192) 47.5%, rgb(0, 144, 255) 55%, rgb(0, 255, 139) 72%, rgb(255, 77, 158) 90%, rgb(255, 214, 0) 100%)",
-            filter: "blur(2px)",
-            height: 11.62,
+            filter: "blur(2.073px)",
+            height: 11.619,
             left: 403,
+            objectFit: "fill",
             position: "absolute",
             top: 95,
-            width: 48.13,
+            width: 48.132,
           }}
         />
 
-        <div
+        <img
+          alt=""
+          src={rainbowDashUrl}
           style={{
-            background:
-              "linear-gradient(90deg, rgb(255, 180, 40) 0%, rgb(255, 214, 0) 4%, rgb(255, 138, 0) 22%, rgb(255, 0, 128) 40%, rgb(128, 72, 192) 47.5%, rgb(0, 144, 255) 55%, rgb(0, 255, 139) 72%, rgb(255, 77, 158) 90%, rgb(255, 214, 0) 100%)",
-            height: 11.62,
+            height: 11.619,
             left: 403,
+            objectFit: "fill",
             position: "absolute",
             top: 95,
-            width: 48.13,
+            width: 48.132,
           }}
         />
 

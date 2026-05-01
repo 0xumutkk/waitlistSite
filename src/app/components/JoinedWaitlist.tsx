@@ -115,16 +115,18 @@ async function renderCanvasCard(
     ctx.textBaseline = "alphabetic";
     ctx.fillText("Perminal", 11, 20);
 
-    const dashX = 93;
-    const dashY = 18.4;
-    const dashWidth = 24.6;
-    const dashHeight = 5.7;
+    const dashX = 100.75;
+    const dashY = 23.75;
+    const dashWidth = 12.03;
+    const dashHeight = 2.9;
     const centerX = dashX + dashWidth / 2;
     const centerY = dashY + dashHeight / 2;
     const gradient = ctx.createConicGradient(Math.PI / 2, centerX, centerY);
     gradient.addColorStop(0, "rgb(255, 180, 40)");
     gradient.addColorStop(0.038462, "rgb(255, 214, 0)");
+    gradient.addColorStop(0.12923, "rgb(255, 176, 0)");
     gradient.addColorStop(0.22, "rgb(255, 138, 0)");
+    gradient.addColorStop(0.31, "rgb(255, 69, 64)");
     gradient.addColorStop(0.4, "rgb(255, 0, 128)");
     gradient.addColorStop(0.475, "rgb(128, 72, 192)");
     gradient.addColorStop(0.55, "rgb(0, 144, 255)");
@@ -290,7 +292,7 @@ export function JoinedWaitlist({
   const containerRef = useRef<HTMLDivElement>(null);
   const shareUrl = referralLink ?? `https://perminal.com/${username.replace("@", "")}`;
   const canonicalShareUrl = normalizeShareUrlForX(shareUrl);
-  const xShareUrl = `${canonicalShareUrl}${canonicalShareUrl.includes("?") ? "&" : "?"}card=waitlist6`;
+  const xShareUrl = `${canonicalShareUrl}${canonicalShareUrl.includes("?") ? "&" : "?"}card=waitlist7`;
   const shareText = "I joined the Perminal waitlist. Use my invite link:";
   const fileName = `perminal-waitlist-${username.replace("@", "")}.png`;
 
